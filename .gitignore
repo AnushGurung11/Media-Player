@@ -1,0 +1,16 @@
+# Dependencies (Covers both backend and frontend)
+node_modules/
+
+# Environment Variables (Crucial for backend)
+.env
+.env.local
+.env.production
+
+# Build outputs (Vite uses 'dist', React uses 'build')
+dist/
+build/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
