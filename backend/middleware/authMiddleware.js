@@ -1,8 +1,14 @@
+// Adding jwt 
 const jwt = require("jsonwebtoken");
+// User model from the models
 const User = require("../models/User");
 
+// creating async method 
 const protect = async (req, res, next) => {
+
     try {
+
+        // Temp variable
         let token;
 
         // 1. Check if token exists in request header
@@ -13,21 +19,19 @@ const protect = async (req, res, next) => {
             token = req.headers.authorization.split(" ")[1];
         }
 
-        // 3. If no token found, block the request
         if (!token) {
             return res.status(401).json({ message: "Not authorized, no token" });
         }
 
-        // 4. Verify the token using JWT_SECRET
+        // Decoded JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        //    decoded = { id: "64abc123", iat: ..., exp: ... }
 
-        // 5. Find the user from DB using id inside token
+        // Using the JWT token we are finding the actual userid and removes the password from the response
+        // the "-" tells to remove
+        // .select actually selects the field 
+        // password is the field
         req.user = await User.findById(decoded.id).select("-password");
-        //                                          ↑
-        //                              exclude password from result
 
-        // 6. Call next() — pass control to the actual route
         next();
 
     } catch (error) {
@@ -35,4 +39,5 @@ const protect = async (req, res, next) => {
     }
 };
 
+// Export the only protect function 
 module.exports = { protect };
