@@ -1,9 +1,16 @@
+// So express module lai node modules bata import gare ko
 const express = require("express");
+// Requireed router module from express
 const router = express.Router();
 
-// your routes here
-router.get("/login", (req, res) => { res.send("Hello, login page!"); });
-router.post("/register", (req, res) => { res.send("Hello, register page!"); });
+// Importing the register and login fucntion form authController.js
+const {register,login} = require("../controllers/authController"); 
 
-//  This line is critical — without it, require() returns undefined
-module.exports = router;
+
+// Routing the URL
+router.post("/register", register);
+router.post("/login", login); 
+
+// Exporting the router at the end as we are adding in the outer module instance
+module.exports = router; 
+

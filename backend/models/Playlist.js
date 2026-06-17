@@ -6,6 +6,7 @@ const playlistSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    // Here the songs objects are placed in a list
     songs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
     shuffle: { type: Boolean, default: false },
   },
