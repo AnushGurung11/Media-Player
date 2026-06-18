@@ -12,4 +12,6 @@ const songSchema = new mongoose.Schema({
 }, {timestamps: true});
 
 // Create the Song model using the schema
-const Song = mongoose.model("Song", songSchema);     
+const Song = mongoose.model("Song", songSchema);   
+
+module.exports = Song;

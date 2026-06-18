@@ -1,9 +1,15 @@
-const express = require("express");
-const router = express.Router();
+const express = require("express"); // for the express 
+const router = express.Router(); // for routing functionality
+const { getAllSongs, getSongById, searchSongs, addSong, deleteSong } = require("../controllers/songController"); // Importing functionalaity of Controller
+const { protect } = require("../middleware/authMiddleware"); /// Auto auth 
 
-// your routes here
-router.get("/login", (req, res) => { res.send("Hello, login page!"); });
-router.post("/register", (req, res) => { res.send("Hello, register page!"); });
+// Public routes — no token needed
+router.get("/", getAllSongs);
+router.get("/search", searchSongs);
+router.get("/:id", getSongById);
 
-//  This line is critical — without it, require() returns undefined
+// Protected routes — token required
+router.post("/", protect, addSong);
+router.delete("/:id", protect, deleteSong);
+
 module.exports = router;

@@ -18,10 +18,12 @@ const generateToken = (userId) => {
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     try {
         // Taking the username, email and password from the req send by client side.
         const { username, email, password } = req.body;
+
+        console.log("Registering user:", { username, email }); // Debug log
 
         // 1. Check if all fields are provided
         if (!username || !email || !password) {
@@ -39,8 +41,13 @@ const register = async (req, res) => {
         // the pre("save") hook in User.js model
         const user = await User.create({ username, email, password });
 
+        console .log("User created:", user); // Debug log
+
         // 4. Generate token and send response
         const token = generateToken(user._id);
+
+        console.log("Token generated:", token); // Debug log
+        console.log("User created:", user); // Debug log
         res.status(201).json({
             message: "User registered successfully",
             token,
@@ -51,8 +58,11 @@ const register = async (req, res) => {
             }
         });
 
+        console.log("Registration successful, token generated"); // Debug log
+
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        console.error("Error in register:", error);
+        next(error);
     }
 };
 
