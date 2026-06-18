@@ -23,7 +23,7 @@ app.use(express.json());
 // require where remaing URL will be matched by the respective Route js file. 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/songs", require("./routes/songRoutes"));
-// app.use("/api/playlists", require("./routes/playlistRoutes"));
+app.use("/api/playlists", require("./routes/playlistRoutes"));
 
 // This line is saying that to use which port for the server to run
 // We have already set the port to 5000 in .env file but if that doesnot work we can work 

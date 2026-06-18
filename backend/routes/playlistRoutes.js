@@ -1,9 +1,21 @@
 const express = require("express");
 const router = express.Router();
+const {
+    getPlaylists,
+    getPlaylistById,
+    createPlaylist,
+    addSongToPlaylist,
+    removeSongFromPlaylist,
+    deletePlaylist
+} = require("../controllers/playlistController");
+const { protect } = require("../middleware/authMiddleware");
 
-// your routes here
-router.get("/login", (req, res) => { res.send("Hello, login page!"); });
-router.post("/register", (req, res) => { res.send("Hello, register page!"); });
+// All playlist routes are protected — must be logged in
+router.get("/", protect, getPlaylists);
+router.get("/:id", protect, getPlaylistById);
+router.post("/", protect, createPlaylist);
+router.put("/:id/add", protect, addSongToPlaylist);
+router.put("/:id/remove", protect, removeSongFromPlaylist);
+router.delete("/:id", protect, deletePlaylist);
 
-//  This line is critical — without it, require() returns undefined
 module.exports = router;
