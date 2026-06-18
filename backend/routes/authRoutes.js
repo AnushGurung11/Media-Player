@@ -2,7 +2,9 @@
 const express = require("express");
 // Requireed router module from express
 const router = express.Router();
+const { protect } = require("../middleware/authMiddleware"); /// Auto auth
 
+console.log("Auth routes loaded");
 // Importing the register and login fucntion form authController.js
 const {register,login} = require("../controllers/authController"); 
 
