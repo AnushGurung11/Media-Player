@@ -24,6 +24,7 @@ app.use(express.json());
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/songs", require("./routes/songRoutes"));
 app.use("/api/playlists", require("./routes/playlistRoutes"));
+app.use("/api/itunes", require("./routes/itunesRoutes"));
 
 // This line is saying that to use which port for the server to run
 // We have already set the port to 5000 in .env file but if that doesnot work we can work 
