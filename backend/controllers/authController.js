@@ -1,107 +1,45 @@
-// Importing the Modules from node modules
 const User = require("../models/User");
-const jwt = require("jsonwebtoken");
+const jwt  = require("jsonwebtoken");
 
-// A func for genrating the JWT token. 
-const generateToken = (userId) => {
-    // function to create the JWT token 
-    // A JWT token has three parts: header, payload, and signature.
+// Generate JWT — now includes role in payload
+const generateToken = (userId, role) => {
     return jwt.sign(
-        // Payload
-        { id: userId },                     // payload — what we store inside the token
-        // Secret key  
-        process.env.JWT_SECRET,             // secret key from .env
-        { expiresIn: "7d" }                 // token expires in 7 days
+        { id: userId, role },           // ← role added to payload
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
     );
 };
 
+// -------------------------------------------------------
 // @route   POST /api/auth/register
-// @desc    Register a new user
+// @desc    Register a normal user
 // @access  Public
-const register = async (req, res, next) => {
+// -------------------------------------------------------
+const register = async (req, res) => {
     try {
-        // Taking the username, email and password from the req send by client side.
         const { username, email, password } = req.body;
 
-        console.log("Registering user:", { username, email }); // Debug log
-
-        // 1. Check if all fields are provided
         if (!username || !email || !password) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        // 2. Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // 3. Create new user
-        // Note: password hashing is handled automatically by
-        // the pre("save") hook in User.js model
+        // role defaults to "user" automatically from schema
         const user = await User.create({ username, email, password });
 
-        console .log("User created:", user); // Debug log
-
-        // 4. Generate token and send response
-        const token = generateToken(user._id);
-
-        console.log("Token generated:", token); // Debug log
-        console.log("User created:", user); // Debug log
+        const token = generateToken(user._id, user.role);
         res.status(201).json({
             message: "User registered successfully",
             token,
             user: {
-                id: user._id,
+                id:       user._id,
                 username: user.username,
-                email: user.email
-            }
-        });
-
-        console.log("Registration successful, token generated"); // Debug log
-
-    } catch (error) {
-        console.error("Error in register:", error);
-        next(error);
-    }
-};
-
-// -------------------------------------------------------
-// @route   POST /api/auth/login
-// @desc    Login user and return JWT token
-// @access  Public
-// -------------------------------------------------------
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // 1. Check if all fields are provided
-        if (!email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        // 2. Check if user exists
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ message: "Invalid email or password" });
-        }
-
-        // 3. Compare password using bcrypt
-        // matchPassword is a method we define on the User model
-        const isMatch = await user.matchPassword(password);
-        if (!isMatch) {
-            return res.status(401).json({ message: "Invalid email or password" });
-        }
-
-        // 4. Generate token and send response
-        const token = generateToken(user._id);
-        res.status(200).json({
-            message: "Login successful",
-            token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email
+                email:    user.email,
+                role:     user.role      // ← send role to frontend
             }
         });
 
@@ -110,4 +48,91 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, login };
+// -------------------------------------------------------
+// @route   POST /api/auth/register-admin
+// @desc    Register an admin user (protected by ADMIN_SECRET)
+// @access  Semi-private — needs ADMIN_SECRET from .env
+// -------------------------------------------------------
+const registerAdmin = async (req, res) => {
+    try {
+        const { username, email, password, adminSecret } = req.body;
+
+        // Check admin secret key — only people who know this can create admins
+        if (adminSecret !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ message: "Invalid admin secret" });
+        }
+
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        // role explicitly set to "admin"
+        const user = await User.create({ username, email, password, role: "admin" });
+
+        const token = generateToken(user._id, user.role);
+        res.status(201).json({
+            message: "Admin registered successfully",
+            token,
+            user: {
+                id:       user._id,
+                username: user.username,
+                email:    user.email,
+                role:     user.role
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   POST /api/auth/login
+// @desc    Login — works for both users and admins
+// @access  Public
+// -------------------------------------------------------
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+ 
+        if (!email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+ 
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+ 
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+ 
+        // ✅ ADDED — update lastLogin timestamp every time user logs in
+        user.lastLogin = Date.now();
+        await user.save();
+ 
+        const token = generateToken(user._id, user.role);
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id:       user._id,
+                username: user.username,
+                email:    user.email,
+                role:     user.role
+            }
+        });
+ 
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { register, registerAdmin, login };

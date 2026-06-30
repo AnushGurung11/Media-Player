@@ -1,15 +1,16 @@
-const express = require("express"); // for the express 
-const router = express.Router(); // for routing functionality
-const { getAllSongs, getSongById, searchSongs, addSong, deleteSong } = require("../controllers/songController"); // Importing functionalaity of Controller
-const { protect } = require("../middleware/authMiddleware"); /// Auto auth 
+const express    = require("express");
+const router     = express.Router();
+const { getAllSongs, getSongById, searchSongs, addSong, deleteSong } = require("../controllers/songController");
+const { protect }   = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 
-// Public routes — no token needed
-router.get("/", getAllSongs);
-router.get("/search", searchSongs);
-router.get("/:id", getSongById);
+// Public
+router.get("/",        getAllSongs);
+router.get("/search",  searchSongs);
+router.get("/:id",     getSongById);
 
-// Protected routes — token required
-router.post("/", protect, addSong);
-router.delete("/:id", protect, deleteSong);
+// Admin only — must be logged in AND be an admin
+router.post("/",    protect, adminOnly, addSong);
+router.delete("/:id", protect, adminOnly, deleteSong);
 
 module.exports = router;
