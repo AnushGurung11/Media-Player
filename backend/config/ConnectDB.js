@@ -1,26 +1,24 @@
-// This JS is for creating connection between the mongodb 
-
+// Here we are connecting to the mongo DB
 const mongoose = require("mongoose"); 
+const DB_URL = process.env.MONGO_URI; // We are adding the Mongo DB URL for the cluster using env file
 
-const DB_URL = process.env.MONGO_URI; // From the env file, we are accessing the actual location of the database 
-
+// This is the main fnc for connecting to the DB
 const connectDB = async () => {
+  
+  // Try catch block catches any errors while connecting to the DB
   try{
-    await
-    // Creating a connection between the nodejs and mongodb 
+
+    await // This await keyword waits for the promise to be completed 
     mongoose.connect(DB_URL); 
-    // if connected the message is displayed
     console.log("MongoBD connected"); 
-
-    //any error will be handled here
+   
   }catch (err){
+    // Any error while running the code is catched here
     console.error(err.message); 
-
-    // If any error occurs while connected to the db there exit is performed and error will be displayed
-    // The code for db not connecting will be 1
+    // Connection failed code is 1 
     process.exit(1); 
   }
 }; 
 
-// This module will export the DB connection
+//  The connection function is exported. 
 module.exports = connectDB; 
