@@ -19,13 +19,16 @@ function LoginPage() {
     try {
       const res = await api.post("/auth/login", formData);
 
+      console.log("Login response:", res.data);
       // Store token AND user info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user",  JSON.stringify(res.data.user));
+      
+      
 
       // Redirect based on role ← industry standard approach
       if (res.data.user.role === "admin") {
-        navigate("/admin/dashboard");
+        navigate("/admin/overview");
       } else {
         navigate("/");
       }

@@ -1,5 +1,5 @@
-const mongoose = require("mongoose"); // For mongobd
-const songSchema = new mongoose.Schema( //Creating a schema for the song model
+const mongoose = require("mongoose"); // For mongodb
+const trackSchema = new mongoose.Schema( //Creating a schema for the song model
     {
         // Can be extracted using music-metadata library
         title: {type: String, required: true}, 
@@ -45,11 +45,11 @@ const songSchema = new mongoose.Schema( //Creating a schema for the song model
 ); 
 
 // Before saving the song object in MongoDB, check if the license is downloadable and set the isDownloaded field accordingly
-songSchema.pre("save", async function(){
+trackSchema.pre("save", async function(){
     const downloadableLiscenses = ["CC0", "CC-BY", "CC-BY-SA"];
     this.isDownloaded = downloadableLiscenses.includes(this.license);
 }); 
 
 //  exporitng the model to be used in other files
-module.exports = mongoose.model("Song", songSchema);
+module.exports = mongoose.model("Track", trackSchema);
 

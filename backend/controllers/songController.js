@@ -1,8 +1,8 @@
-const Song = require("../models/Song");
+const Song = require("../models/Track");
 
 // -------------------------------------------------------
-// @route   GET /api/songs
-// @desc    Get all songs
+// @route   GET /api/tracks
+// @desc    Get all tracks
 // @access  Public
 // -------------------------------------------------------
 const getAllSongs = async (req, res) => {
