@@ -1,13 +1,13 @@
 // Importing the required models
 const User     = require("../models/User");
-const Song     = require("../models/Song");
+const Song     = require("../models/Track");
 const Playlist = require("../models/Playlist");
 
-// -------------------------------------------------------
-// @route   GET /api/admin/stats
-// @desc    Get overview counts for admin dashboard
-// @access  Admin only
-// -------------------------------------------------------
+/**
+ * @route  GET /api/admin/stats
+ * @desc   Get overview counts for admin dashboard
+ * @access Admin only 
+ */
 const getStats = async (req, res) => {
     try {
         // Running all counts in parallel — faster than one by one
