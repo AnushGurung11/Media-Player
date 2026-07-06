@@ -1,13 +1,14 @@
-const mm       = require("music-metadata");
-const { v4: uuidv4 } = require("uuid");
+const mm = require("music-metadata");
 const { supabase, uploadToSupabase } = require("../config/supabase");
-const Track    = require("../models/Track");
+const Track = require("../models/Track");
+
+const ALLOWED_LICENSES = ["all-rights-reserved", "CC0", "CC-BY", "CC-BY-SA", "CC-BY-NC"];
 
 // -------------------------------------------------------
 // @route   POST /api/tracks/preview
 // @desc    Extract metadata from uploaded audio file
 //          Does NOT save anything — just reads and returns
-// @access  Private (must be logged in)
+// @access  Private (admin only, via route middleware)
 // -------------------------------------------------------
 const previewTrack = async (req, res) => {
     try {
@@ -48,19 +49,33 @@ const previewTrack = async (req, res) => {
 
 // -------------------------------------------------------
 // @route   POST /api/tracks/upload
-// @desc    Upload audio + cover to Supabase, save Track to MongoDB
-// @access  Private (must be logged in)
+// @desc    Upload audio (+ optional cover) to Supabase, save Track to MongoDB
+// @access  Private (admin only, via route middleware)
 // -------------------------------------------------------
 const uploadTrack = async (req, res) => {
     try {
         const audioFile = req.files?.audio?.[0];
-        const coverFile = req.files?.cover?.[0];
+        const coverFile = req.files?.cover?.[0]; // FIX: now genuinely optional
 
         if (!audioFile) {
             return res.status(400).json({ message: "No audio file provided" });
         }
-        if (!coverFile) {
-            return res.status(400).json({ message: "No cover image provided" });
+
+        // FIX: server no longer trusts the frontend blindly for required fields.
+        const { title, artist, license } = req.body;
+
+        if (!title?.trim() || !artist?.trim()) {
+            return res.status(400).json({ message: "Title and artist are required" });
+        }
+
+        // FIX: license is now whitelisted server-side instead of accepted as any string.
+        if (!license || !ALLOWED_LICENSES.includes(license)) {
+            return res.status(400).json({ message: "Invalid or missing license" });
+        }
+
+        // FIX: consent is now actually enforced and persisted, not just collected.
+        if (req.body.consent !== "true") {
+            return res.status(400).json({ message: "Consent confirmation is required" });
         }
 
         // Extract duration from audio metadata
@@ -77,21 +92,27 @@ const uploadTrack = async (req, res) => {
             return res.status(400).json({ message: "Could not determine audio duration" });
         }
 
-        // Upload both files to their respective Supabase buckets
         const audioKey = await uploadToSupabase(audioFile, "audio");
-        const coverKey = await uploadToSupabase(coverFile, "cover");
+
+        // FIX: cover is optional — only touch Supabase/coverKey if a file was actually sent.
+        let coverKey = null;
+        if (coverFile) {
+            coverKey = await uploadToSupabase(coverFile, "cover");
+        }
 
         const track = await Track.create({
-            title:    req.body.title,
-            artist:   req.body.artist,
-            album:    req.body.album,
-            genre:    req.body.genre,
+            title:    title.trim(),
+            artist:   artist.trim(),
+            album:    req.body.album?.trim() || "",
+            genre:    req.body.genre?.trim() || "",
             duration,
             audioKey,
             coverKey,
-            license:     req.body.license,
-            uploaderId:  req.user._id,
-            uploadState: "completed",
+            license,
+            uploaderId:      req.user._id,
+            uploadState:     "completed",
+            consentLoggedAt: new Date(), // FIX: now actually written to the DB
+            consentIp:       req.ip,     // FIX: now actually written to the DB
         });
 
         res.status(201).json({ message: "Track uploaded successfully", track });
@@ -197,4 +218,42 @@ const downloadTrack = async (req, res) => {
     }
 };
 
-module.exports = { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack };
+// -------------------------------------------------------
+// @route   DELETE /api/tracks/:id
+// @desc    Delete a track — removes files from Supabase and the Mongo doc
+// @access  Private (admin only, via route middleware)
+// -------------------------------------------------------
+const deleteTrack = async (req, res) => {
+    try {
+        const track = await Track.findById(req.params.id);
+
+        if (!track) {
+            return res.status(404).json({ message: "Track not found" });
+        }
+
+        // Best-effort cleanup of storage files — don't let a storage hiccup
+        // block the DB delete, but do report it back so admin knows.
+        const storageErrors = [];
+
+        if (track.audioKey) {
+            const { error } = await supabase.storage.from("audio").remove([track.audioKey]);
+            if (error) storageErrors.push(`audio: ${error.message}`);
+        }
+        if (track.coverKey) {
+            const { error } = await supabase.storage.from("cover").remove([track.coverKey]);
+            if (error) storageErrors.push(`cover: ${error.message}`);
+        }
+
+        await track.deleteOne();
+
+        res.status(200).json({
+            message: "Track deleted successfully",
+            storageWarnings: storageErrors.length ? storageErrors : undefined,
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Delete failed", error: error.message });
+    }
+};
+
+module.exports = { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack, deleteTrack };

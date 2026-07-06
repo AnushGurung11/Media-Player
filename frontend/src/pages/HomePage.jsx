@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import Player from "../components/Player";
 
@@ -13,6 +13,7 @@ function HomePage() {
   const [error, setError]         = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user.role === "admin"; // NEW — drives the admin-only UI below
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -87,11 +88,41 @@ function HomePage() {
         <div>
           <span>Logged in as: <strong>{user.username}</strong> ({user.role})</span>
           &nbsp;&nbsp;
+          {/* NEW — only rendered for admins, links into the admin panel */}
+          {isAdmin && (
+            <Link to="/admin/upload">
+              <button style={{ marginRight: "8px" }}>⚙ Admin Panel</button>
+            </Link>
+          )}
           <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
       <hr />
+
+      {/* NEW — admin-only quick actions card, only visible to admins */}
+      {isAdmin && (
+        <div style={{
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+          padding: "12px 16px",
+          marginBottom: "16px",
+          backgroundColor: "#f7f7fa",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <span><strong>Admin tools</strong> — manage the track library</span>
+          <div>
+            <Link to="/admin/upload" style={{ marginRight: "12px" }}>
+              <button>+ Upload Track</button>
+            </Link>
+            <Link to="/admin/tracks">
+              <button>Manage Tracks</button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Mode toggle buttons */}
       <div style={{ marginBottom: "16px" }}>
@@ -125,7 +156,12 @@ function HomePage() {
       )}
 
       {!loading && !error && tracks.length === 0 && (
-        <p>No tracks available yet. Ask an admin to upload some music.</p>
+        <p>
+          No tracks available yet.{" "}
+          {isAdmin
+            ? <Link to="/admin/upload">Upload the first one.</Link>
+            : "Ask an admin to upload some music."}
+        </p>
       )}
 
       {!loading && queue.length > 0 && (
@@ -188,6 +224,7 @@ function HomePage() {
         mode={mode}
       />
     </div>
+
   );
 }
 

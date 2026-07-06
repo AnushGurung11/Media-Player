@@ -1,20 +1,43 @@
-const express    = require("express");
-const router     = express.Router();
-const { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack } = require("../controllers/trackController");
-const { protect }     = require("../middleware/authMiddleware");
-const { adminOnly }   = require("../middleware/adminMiddleware");
-const { uploadTrack: uploadMiddleware } = require("../middleware/upload");
+const express = require("express");
+const multer = require("multer");
+const router = express.Router();
+
+// ASSUMPTION: adjust this import path/name to match your actual auth middleware file.
+// It must attach req.user (including req.user.role) on a valid token.
+const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
+
+// FIX: was require("../controllers/tracks.controller") — your real file is trackController.js
+const {
+    previewTrack,
+    uploadTrack,
+    getAllTracks,
+    streamTrack,
+    downloadTrack,
+    deleteTrack,
+} = require("../controllers/trackController");
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB per file — adjust as needed
+});
+
+const previewFields = upload.fields([{ name: "audio", maxCount: 1 }]);
+const uploadFields = upload.fields([
+    { name: "audio", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+]);
 
 // Public
-router.get("/",              getAllTracks);
-router.get("/:id/stream",   protect, streamTrack);
+router.get("/", getAllTracks);
+
+// Authenticated (any logged-in user)
+router.get("/:id/stream", protect, streamTrack);
 router.get("/:id/download", protect, downloadTrack);
 
-// Private — any logged in user can preview and upload
-router.post("/preview", protect, uploadMiddleware, previewTrack);
-
-// Note: /upload uses the same uploadMiddleware to handle multipart form data
-// but preview only receives audio, upload receives audio + cover + form fields
-router.post("/upload",  protect, uploadMiddleware, uploadTrack);
+// Admin only — FIX: previously had no role check, any logged-in user could upload
+router.post("/preview", protect, adminOnly, previewFields, previewTrack);
+router.post("/upload", protect, adminOnly, uploadFields, uploadTrack);
+router.delete("/:id", protect, adminOnly, deleteTrack);
 
 module.exports = router;

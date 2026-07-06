@@ -21,7 +21,6 @@ app.use(express.json());
 // the /api/auth is the initial URL and then the rest will be handled by the 
 // require where remaing URL will be matched by the respective Route js file. 
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/tracks", require("./routes/trackRoutes"));
 app.use("/api/playlists", require("./routes/playlistRoutes"));
 app.use("/api/itunes", require("./routes/itunesRoutes"));
 app.use("/api/tracks", require("./routes/trackRoutes"));
