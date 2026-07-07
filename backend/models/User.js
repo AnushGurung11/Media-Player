@@ -25,6 +25,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// The user is only online for 15 minutes after loging in and later is calcuated in last login
 userSchema.methods.isOnline = function () {
   const FIFTEEN_MIN = 15 * 60 * 1000;
   return Date.now() - new Date(this.lastLogin).getTime() < FIFTEEN_MIN;

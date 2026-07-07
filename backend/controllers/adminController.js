@@ -32,12 +32,12 @@ const getStats = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
-// -------------------------------------------------------
-// @route   GET /api/admin/users
-// @desc    Get all users with their active status
-// @access  Admin only
-// -------------------------------------------------------
+/**
+*@route   GET /api/admin/users
+*@desc    Get all users with their active status
+*@access  Admin only
+ */
+// Gets all user exclusing the password and user with role user only
 const getAllUsers = async (req, res) => {
     try {
         // Exclude password, get normal users only (not other admins)
@@ -49,7 +49,9 @@ const getAllUsers = async (req, res) => {
             username:  user.username,
             email:     user.email,
             joinedAt:  user.createdAt,
+            // This is based on the user schema it self
             lastLogin: user.lastLogin,
+            // This is also calcualted in the user model as well
             isActive:  user.isOnline()   // true/false computed live
         }));
 

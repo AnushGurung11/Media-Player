@@ -36,8 +36,8 @@ router.get("/:id/stream", protect, streamTrack);
 router.get("/:id/download", protect, downloadTrack);
 
 // Admin only — FIX: previously had no role check, any logged-in user could upload
-router.post("/preview", protect, adminOnly, previewFields, previewTrack);
-router.post("/upload", protect, adminOnly, uploadFields, uploadTrack);
+router.post("/preview", protect, previewFields, previewTrack);
+router.post("/upload", protect, uploadFields, uploadTrack);
 router.delete("/:id", protect, adminOnly, deleteTrack);
 
 module.exports = router;

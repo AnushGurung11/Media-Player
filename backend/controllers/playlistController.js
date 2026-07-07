@@ -1,4 +1,5 @@
 const Playlist = require("../models/Playlist");
+const supabase = require("../config/supabase").supabase;
 
 // -------------------------------------------------------
 // @route   GET /api/playlists
@@ -26,19 +27,33 @@ const getPlaylists = async (req, res) => {
 const getPlaylistById = async (req, res) => {
     try {
         const playlist = await Playlist.findById(req.params.id)
-            .populate("songs"); // replaces ObjectIds with full song documents
+            .populate("songs");
 
-        // Check if playlist exists
         if (!playlist) {
             return res.status(404).json({ message: "Playlist not found" });
         }
 
-        // Check if playlist belongs to logged in user
         if (playlist.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Not authorized" });
         }
 
-        res.status(200).json(playlist);
+        // ✅ Add coverUrl to each song — same pattern as getAllTracks
+        const songsWithUrls = playlist.songs.map((song) => {
+            let coverUrl = null;
+            if (song.coverKey) {
+                const { data } = supabase.storage
+                    .from("cover")
+                    .getPublicUrl(song.coverKey);
+                coverUrl = data.publicUrl;
+            }
+            return { ...song.toObject(), coverUrl };
+        });
+
+        res.status(200).json({
+            ...playlist.toObject(),
+            songs: songsWithUrls
+        });
+
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

@@ -113,8 +113,7 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
- 
-        // ✅ ADDED — update lastLogin timestamp every time user logs in
+        // So for this part     
         user.lastLogin = Date.now();
         await user.save();
  
