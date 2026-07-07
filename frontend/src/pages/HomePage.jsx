@@ -5,12 +5,12 @@ import Player from "../components/Player";
 
 function HomePage() {
   const navigate = useNavigate();
-  const [tracks, setTracks]       = useState([]);
-  const [queue, setQueue]         = useState([]);
-  const [currentIndex, setIndex]  = useState(null);
-  const [mode, setMode]           = useState("normal"); // "normal" | "shuffle" | "random"
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState("");
+  const [tracks, setTracks] = useState([]);
+  const [queue, setQueue] = useState([]);
+  const [currentIndex, setIndex] = useState(null);
+  const [mode, setMode] = useState("normal"); // "normal" | "shuffle" | "random"
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isAdmin = user.role === "admin"; // NEW — drives the admin-only UI below
@@ -26,7 +26,7 @@ function HomePage() {
       } catch (err) {
         setError(
           err.response?.data?.message ||
-          err.response?.data?.error   ||
+          err.response?.data?.error ||
           "Failed to load tracks. Check if the backend is running."
         );
       } finally {
@@ -94,6 +94,9 @@ function HomePage() {
               <button style={{ marginRight: "8px" }}>⚙ Admin Panel</button>
             </Link>
           )}
+          <Link to="/upload">
+            <button style={{ marginRight: "8px" }}>+ Upload Track</button>
+          </Link>
           <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
@@ -141,9 +144,9 @@ function HomePage() {
           </button>
         ))}
         <span style={{ marginLeft: "12px", color: "gray", fontSize: "0.9em" }}>
-          {mode === "normal"  && "Playing in original list order"}
+          {mode === "normal" && "Playing in original list order"}
           {mode === "shuffle" && "Playing in shuffled order (reshuffles on toggle)"}
-          {mode === "random"  && "Next song is completely random each time"}
+          {mode === "random" && "Next song is completely random each time"}
         </span>
       </div>
 
@@ -168,7 +171,7 @@ function HomePage() {
         <div>
           <h2>Tracks ({queue.length})</h2>
           <table border="1" cellPadding="8" cellSpacing="0"
-                 style={{ width: "100%", borderCollapse: "collapse" }}>
+            style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>#</th>
@@ -186,12 +189,12 @@ function HomePage() {
             <tbody>
               {queue.map((track, index) => (
                 <tr key={track._id}
-                    style={{ backgroundColor: currentIndex === index ? "#d0e8ff" : "white" }}>
+                  style={{ backgroundColor: currentIndex === index ? "#d0e8ff" : "white" }}>
                   <td>{index + 1}</td>
                   <td>
                     {track.coverUrl
                       ? <img src={track.coverUrl} alt={track.title}
-                             style={{ width: "40px", height: "40px", objectFit: "cover" }} />
+                        style={{ width: "40px", height: "40px", objectFit: "cover" }} />
                       : "—"}
                   </td>
                   <td>{track.title}</td>
