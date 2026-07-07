@@ -1,22 +1,28 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import Player from "../components/Player";
 
 function PlaylistsPage() {
   const navigate = useNavigate();
 
-  const [playlists, setPlaylists]   = useState([]);
-  const [tracks, setTracks]         = useState([]); // all tracks for song picker
-  const [selected, setSelected]     = useState(null); // currently open playlist
-  const [newName, setNewName]       = useState("");
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState("");
+  const [playlists, setPlaylists] = useState([]);
+  const [tracks, setTracks] = useState([]); // all tracks for song picker
+  const [selected, setSelected] = useState(null); // currently open playlist
+  const [newName, setNewName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
 
+  // For the playlist functionalaity
+  const [queue, setQueue] = useState([]);
+  const [currentIndex, setIndex] = useState(null);
+  const [mode, setMode] = useState("normal");
+
   // Song picker state — shown when user clicks "Add Song" inside a playlist
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerMsg, setPickerMsg]   = useState("");
+  const [pickerMsg, setPickerMsg] = useState("");
 
   const loadPlaylists = async () => {
     setLoading(true);
@@ -116,6 +122,40 @@ function PlaylistsPage() {
       setError(err.response?.data?.message || "Failed to delete playlist.");
     }
   };
+  // When user clicks Play on a song in the playlist
+  const handlePlay = (song) => {
+    const index = queue.findIndex(t => t._id === song._id);
+    setIndex(index !== -1 ? index : 0);
+  };
+
+  const handleNext = () => {
+    if (currentIndex === null || queue.length === 0) return;
+    if (mode === "random") {
+      setIndex(Math.floor(Math.random() * queue.length));
+    } else {
+      setIndex((currentIndex + 1) % queue.length);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex === null || queue.length === 0) return;
+    setIndex((currentIndex - 1 + queue.length) % queue.length);
+  };
+
+  useEffect(() => {
+    if (!selected || selected.songs.length === 0) return;
+    if (mode === "shuffle") {
+      const shuffled = [...selected.songs];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setQueue(shuffled);
+    } else {
+      setQueue([...selected.songs]);
+    }
+    setIndex(null);
+  }, [mode, selected]);
 
   return (
     <div style={{ padding: "24px" }}>
@@ -152,7 +192,7 @@ function PlaylistsPage() {
             />
             <button type="submit">+ Create</button>
           </form>
-          {createError   && <p style={{ color: "red" }}>{createError}</p>}
+          {createError && <p style={{ color: "red" }}>{createError}</p>}
           {createSuccess && <p style={{ color: "green" }}>{createSuccess}</p>}
 
           <hr />
@@ -168,13 +208,13 @@ function PlaylistsPage() {
 
           {playlists.map((pl) => (
             <div key={pl._id}
-                 style={{
-                   border: "1px solid #ccc",
-                   borderRadius: "4px",
-                   padding: "10px",
-                   marginBottom: "8px",
-                   backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white"
-                 }}>
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                padding: "10px",
+                marginBottom: "8px",
+                backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white"
+              }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <strong>{pl.name}</strong>
@@ -240,13 +280,13 @@ function PlaylistsPage() {
                   );
                   return (
                     <div key={track._id}
-                         style={{
-                           display: "flex",
-                           justifyContent: "space-between",
-                           alignItems: "center",
-                           padding: "6px 0",
-                           borderBottom: "1px solid #eee"
-                         }}>
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "6px 0",
+                        borderBottom: "1px solid #eee"
+                      }}>
                       <span>
                         <strong>{track.title}</strong> — {track.artist}
                       </span>
@@ -263,14 +303,34 @@ function PlaylistsPage() {
               </div>
             )}
 
+            {/* For the option of suffleing and randomizing the music order */}
+            {/* Playback mode controls */}
+            <div style={{ marginBottom: "12px" }}>
+              <strong>Mode: </strong>
+              {["normal", "shuffle", "random"].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  style={{
+                    marginRight: "8px",
+                    fontWeight: mode === m ? "bold" : "normal",
+                    textDecoration: mode === m ? "underline" : "none"
+                  }}
+                >
+                  {mode === m ? "✓ " : ""}{m.charAt(0).toUpperCase() + m.slice(1)}
+                </button>
+              ))}
+            </div>
+
             {/* Songs in this playlist */}
             {selected.songs?.length === 0 ? (
               <p style={{ color: "gray" }}>
                 No songs yet. Click "+ Add Songs" to add some.
               </p>
             ) : (
+
               <table border="1" cellPadding="8" cellSpacing="0"
-                     style={{ width: "100%", borderCollapse: "collapse" }}>
+                style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
                     <th>#</th>
@@ -279,6 +339,7 @@ function PlaylistsPage() {
                     <th>Artist</th>
                     <th>Album</th>
                     <th>Duration</th>
+                    <th>Play</th>
                     <th>Remove</th>
                   </tr>
                 </thead>
@@ -289,7 +350,7 @@ function PlaylistsPage() {
                       <td>
                         {song.coverUrl
                           ? <img src={song.coverUrl} alt={song.title}
-                                 style={{ width: "36px", height: "36px", objectFit: "cover" }} />
+                            style={{ width: "36px", height: "36px", objectFit: "cover" }} />
                           : "—"}
                       </td>
                       <td>{song.title || "—"}</td>
@@ -301,6 +362,13 @@ function PlaylistsPage() {
                           : "—"}
                       </td>
                       <td>
+                        <button onClick={() => handlePlay(song)} style={{ marginRight: "6px" }}>
+                          {currentIndex !== null && queue[currentIndex]?._id === song._id
+                            ? "▶ Playing"
+                            : "▶ Play"}
+                        </button>
+                      </td>
+                      <td>
                         <button
                           onClick={() => handleRemoveSong(song._id || song)}
                           style={{ color: "red" }}
@@ -308,13 +376,21 @@ function PlaylistsPage() {
                           Remove
                         </button>
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+
           </div>
         )}
+        <Player
+          track={currentIndex !== null ? queue[currentIndex] : null}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          mode={mode}
+        />
 
         {/* Prompt when no playlist is open */}
         {!selected && playlists.length > 0 && (
