@@ -94,11 +94,15 @@ function HomePage() {
               <button style={{ marginRight: "8px" }}>⚙ Admin Panel</button>
             </Link>
           )}
+          <Link to="/playlists">
+            <button style={{ marginRight: "8px" }}>📋 My Playlists</button>
+          </Link>
           <Link to="/upload">
             <button style={{ marginRight: "8px" }}>+ Upload Track</button>
           </Link>
           <button onClick={handleLogout}>Logout</button>
         </div>
+
       </div>
 
       <hr />
