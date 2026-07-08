@@ -1,55 +1,8 @@
-import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
-import api from "../../services/api";
+import { useAdminTracks } from "../../hooks/useAdminTracks";
 
 function AdminTracks() {
-  const [tracks, setTracks]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
-  const [deletingId, setDeletingId] = useState(null); // track._id currently being deleted
-
-  const loadTracks = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.get("/tracks");
-      setTracks(res.data);
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        err.response?.data?.error   ||
-        "Failed to load tracks."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadTracks();
-  }, []);
-
-  const handleDelete = async (track) => {
-    const confirmed = window.confirm(
-      `Delete "${track.title}" by ${track.artist}? This cannot be undone.`
-    );
-    if (!confirmed) return;
-
-    setDeletingId(track._id);
-    setError("");
-    try {
-      await api.delete(`/tracks/${track._id}`);
-      setTracks((prev) => prev.filter((t) => t._id !== track._id));
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        err.response?.data?.error   ||
-        "Failed to delete track."
-      );
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  const { tracks, loading, error, deletingId, handleDelete } = useAdminTracks();
 
   return (
     <AdminLayout>

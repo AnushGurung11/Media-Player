@@ -1,162 +1,35 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import api from "../services/api";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { usePlaylists } from "../hooks/usePlaylists";
+import { usePlayer } from "../context/PlayerContext";
 import Player from "../components/Player";
 
 function PlaylistsPage() {
-  const navigate = useNavigate();
+  const {
+    playlists, tracks, selected, loading, error,
+    showPicker, setShowPicker, pickerMsg,
+    handleCreate, handleOpen, handleAddSong, handleRemoveSong, handleDelete,
+  } = usePlaylists();
 
-  const [playlists, setPlaylists] = useState([]);
-  const [tracks, setTracks] = useState([]); // all tracks for song picker
-  const [selected, setSelected] = useState(null); // currently open playlist
+  const { queue, currentIndex, currentTrack, mode, setMode, handlePlay } = usePlayer();
+
+  const { currentTrack, handleNext, handlePrev, mode } = usePlayer();
+  // Form-only state — stays local, nothing else needs it
   const [newName, setNewName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
 
-  // For the playlist functionalaity
-  const [queue, setQueue] = useState([]);
-  const [currentIndex, setIndex] = useState(null);
-  const [mode, setMode] = useState("normal");
-
-  // Song picker state — shown when user clicks "Add Song" inside a playlist
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerMsg, setPickerMsg] = useState("");
-
-  const loadPlaylists = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.get("/playlists");
-      setPlaylists(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load playlists.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadTracks = async () => {
-    try {
-      const res = await api.get("/tracks");
-      setTracks(res.data);
-    } catch (err) {
-      console.error("Failed to load tracks for picker:", err);
-    }
-  };
-
-  useEffect(() => {
-    loadPlaylists();
-    loadTracks();
-  }, []);
-
-  // ── Create playlist ──────────────────────────────────
-  const handleCreate = async (e) => {
+  const onCreateSubmit = async (e) => {
     e.preventDefault();
     setCreateError("");
     setCreateSuccess("");
-    if (!newName.trim()) {
-      setCreateError("Playlist name is required.");
-      return;
-    }
-    try {
-      await api.post("/playlists", { name: newName.trim() });
-      setCreateSuccess(`✅ Playlist "${newName.trim()}" created!`);
+    const result = await handleCreate(newName);
+    if (result.error) setCreateError(result.error);
+    if (result.success) {
+      setCreateSuccess(result.success);
       setNewName("");
-      loadPlaylists();
-    } catch (err) {
-      setCreateError(err.response?.data?.message || "Failed to create playlist.");
     }
   };
-
-  // ── Open a playlist (fetch fresh with songs populated) ──
-  const handleOpen = async (playlist) => {
-    try {
-      const res = await api.get(`/playlists/${playlist._id}`);
-      setSelected(res.data);
-      setShowPicker(false);
-      setPickerMsg("");
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load playlist.");
-    }
-  };
-
-  // ── Add song to currently open playlist ─────────────
-  const handleAddSong = async (trackId) => {
-    if (!selected) return;
-    setPickerMsg("");
-    try {
-      await api.put(`/playlists/${selected._id}/add`, { songId: trackId });
-      setPickerMsg("✅ Song added!");
-      // Refresh the open playlist to show the new song
-      const res = await api.get(`/playlists/${selected._id}`);
-      setSelected(res.data);
-    } catch (err) {
-      setPickerMsg("❌ " + (err.response?.data?.message || "Failed to add song."));
-    }
-  };
-
-  // ── Remove song from currently open playlist ─────────
-  const handleRemoveSong = async (trackId) => {
-    if (!selected) return;
-    if (!window.confirm("Remove this song from the playlist?")) return;
-    try {
-      await api.put(`/playlists/${selected._id}/remove`, { songId: trackId });
-      // Refresh the open playlist
-      const res = await api.get(`/playlists/${selected._id}`);
-      setSelected(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to remove song.");
-    }
-  };
-
-  // ── Delete a playlist ────────────────────────────────
-  const handleDelete = async (playlist) => {
-    if (!window.confirm(`Delete "${playlist.name}"? This cannot be undone.`)) return;
-    try {
-      await api.delete(`/playlists/${playlist._id}`);
-      if (selected?._id === playlist._id) setSelected(null);
-      loadPlaylists();
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete playlist.");
-    }
-  };
-  // When user clicks Play on a song in the playlist
-  const handlePlay = (song) => {
-    const index = queue.findIndex(t => t._id === song._id);
-    setIndex(index !== -1 ? index : 0);
-  };
-
-  const handleNext = () => {
-    if (currentIndex === null || queue.length === 0) return;
-    if (mode === "random") {
-      setIndex(Math.floor(Math.random() * queue.length));
-    } else {
-      setIndex((currentIndex + 1) % queue.length);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex === null || queue.length === 0) return;
-    setIndex((currentIndex - 1 + queue.length) % queue.length);
-  };
-
-  useEffect(() => {
-    if (!selected || selected.songs.length === 0) return;
-    if (mode === "shuffle") {
-      const shuffled = [...selected.songs];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setQueue(shuffled);
-    } else {
-      setQueue([...selected.songs]);
-    }
-    setIndex(null);
-  }, [mode, selected]);
-
   return (
     <div style={{ padding: "24px" }}>
 

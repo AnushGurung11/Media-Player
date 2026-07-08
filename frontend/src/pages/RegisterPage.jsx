@@ -1,40 +1,14 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { Link } from "react-router-dom";
+import { useFormFields } from "../hooks/useFormFields";
+import { useRegister } from "../hooks/useAuthForms";
 
 function RegisterPage() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [formData, handleChange] = useFormFields({ username: "", email: "", password: "" });
+  const { error, loading, submitRegister } = useRegister();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.post("/auth/register", formData);
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      navigate("/");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        err.response?.data?.error   ||
-        "Registration failed. Check your connection and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+    submitRegister(formData);
   };
 
   return (

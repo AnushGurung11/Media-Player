@@ -1,53 +1,40 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../services/api";
+import { usePlayer } from "../context/PlayerContext";
 
-function Player({ track, onNext, onPrev, mode }) {
+function Player() {
+  const { currentTrack, handleNext } = usePlayer();
   const [streamUrl, setStreamUrl] = useState(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const audioRef = useRef(null);
 
-  // Fetch new signed URL every time track changes
   useEffect(() => {
-    if (!track) return;
-
+    if (!currentTrack) return;
     const fetchStreamUrl = async () => {
       setLoading(true);
       setError("");
       setStreamUrl(null);
       try {
-        const res = await api.get(`/tracks/${track._id}/stream`);
+        const res = await api.get(`/tracks/${currentTrack._id}/stream`);
         setStreamUrl(res.data.streamUrl);
       } catch (err) {
-        setError(
-          err.response?.data?.message ||
-          err.response?.data?.error   ||
-          "Failed to load audio stream. Try again."
-        );
+        setError(err.response?.data?.message || err.response?.data?.error || "Failed to load audio stream. Try again.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchStreamUrl();
-  }, [track]);
+  }, [currentTrack]);
 
-  // Auto-play when stream URL is ready
   useEffect(() => {
     if (streamUrl && audioRef.current) {
       audioRef.current.load();
-      audioRef.current.play().catch((err) => {
-        console.warn("Autoplay blocked by browser:", err.message);
-      });
+      audioRef.current.play().catch((err) => console.warn("Autoplay blocked:", err.message));
     }
   }, [streamUrl]);
 
-  // When song ends — trigger next based on mode
-  const handleEnded = () => {
-    if (onNext) onNext();
-  };
-
-  if (!track) return null;
+  if (!currentTrack) return null;
 
   return (
     <div style={{ border: "2px solid black", padding: "16px", marginTop: "24px" }}>

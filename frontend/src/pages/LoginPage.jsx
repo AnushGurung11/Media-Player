@@ -1,42 +1,14 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { Link } from "react-router-dom";
+import { useFormFields } from "../hooks/useFormFields";
+import { useLogin } from "../hooks/useAuthForms";
 
 function LoginPage() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [formData, handleChange] = useFormFields({ email: "", password: "" });
+  const { error, loading, submitLogin } = useLogin();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.post("/auth/login", formData);
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      if (res.data.user.role === "admin") {
-        navigate("/admin/overview");
-      } else {
-        navigate("/");
-      }
-    } catch (err) {
-      // Show exact server error message if available
-      setError(
-        err.response?.data?.message ||
-        err.response?.data?.error   ||
-        "Login failed. Check your connection and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+    submitLogin(formData);
   };
 
   return (

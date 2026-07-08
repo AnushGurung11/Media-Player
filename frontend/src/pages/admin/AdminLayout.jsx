@@ -1,4 +1,5 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
   { to: "/admin/upload", label: "Upload Track" },
@@ -6,14 +7,8 @@ const navItems = [
 ];
 
 function AdminLayout({ children }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
+  const location = useLocation();
+  const { handleLogout } = useAuth();
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>

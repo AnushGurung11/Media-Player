@@ -1,20 +1,17 @@
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import Player from "../components/Player";
-import "../components/playerContext";
+import { useAuth } from "../context/AuthContext";
+import { usePlayer } from "../context/PlayerContext";
 
 function HomePage() {
-  const navigate = useNavigate();
+  const { isAdmin, handleLogout } = useAuth();
+  const { queue, mode, setMode, currentIndex, currentTrack, loadQueueSource, handlePlay, handleNext, handlePrev } = usePlayer();
+
   const [tracks, setTracks] = useState([]);
-  const [queue, setQueue] = useState([]);
-  const [currentIndex, setIndex] = useState(null);
-  const [mode, setMode] = useState("normal"); // "normal" | "shuffle" | "random"
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isAdmin = user.role === "admin"; // NEW — drives the admin-only UI below
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -23,63 +20,15 @@ function HomePage() {
       try {
         const res = await api.get("/tracks");
         setTracks(res.data);
-        setQueue(res.data);
+        loadQueueSource(res.data); // feeds PlayerContext's queue
       } catch (err) {
-        setError(
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Failed to load tracks. Check if the backend is running."
-        );
+        setError(err.response?.data?.message || err.response?.data?.error || "Failed to load tracks. Check if the backend is running.");
       } finally {
         setLoading(false);
       }
     };
     fetchTracks();
   }, []);
-
-  // Rebuild queue when mode changes
-  useEffect(() => {
-    if (tracks.length === 0) return;
-    if (mode === "shuffle") {
-      const shuffled = [...tracks];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setQueue(shuffled);
-      setIndex(null); // reset position when mode changes
-    } else {
-      setQueue([...tracks]);
-      setIndex(null);
-    }
-  }, [mode, tracks]);
-
-  const handlePlay = (track) => {
-    const index = queue.findIndex(t => t._id === track._id);
-    setIndex(index !== -1 ? index : 0);
-  };
-
-  const handleNext = () => {
-    if (currentIndex === null || queue.length === 0) return;
-    if (mode === "random") {
-      setIndex(Math.floor(Math.random() * queue.length));
-    } else {
-      setIndex((currentIndex + 1) % queue.length);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex === null || queue.length === 0) return;
-    setIndex((currentIndex - 1 + queue.length) % queue.length);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  const currentTrack = currentIndex !== null ? queue[currentIndex] : null;
 
   return (
     <div style={{ padding: "16px" }}>
