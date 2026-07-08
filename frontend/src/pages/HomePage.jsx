@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import Player from "../components/Player";
+import "../components/playerContext";
 
 function HomePage() {
   const navigate = useNavigate();
