@@ -11,9 +11,17 @@ function PlaylistsPage() {
     handleCreate, handleOpen, handleAddSong, handleRemoveSong, handleDelete,
   } = usePlaylists();
 
-  const { queue, currentIndex, currentTrack, mode, setMode, handlePlay } = usePlayer();
+  const {
+    queue,
+    currentIndex,
+    currentTrack,
+    mode,
+    setMode,
+    handlePlay,
+    handleNext,
+    handlePrev
+  } = usePlayer();
 
-  const { currentTrack, handleNext, handlePrev, mode } = usePlayer();
   // Form-only state — stays local, nothing else needs it
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");

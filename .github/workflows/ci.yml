@@ -42,6 +42,15 @@ jobs:
       - name: Run tests
         run: npm test --if-present
 
+      - name: Discord notification
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with: 
+          webhook: ${{secrets.DISCORD_WEBHOOK}}
+          status: ${{job.status}}
+          title: "CI Pipeline"
+          description: "Build finished with status: ${{job.status}}"
+
   frontend:
     name: Frontend - Build & Lint
     runs-on: ubuntu-latest
