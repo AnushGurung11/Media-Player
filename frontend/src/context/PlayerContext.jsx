@@ -1,7 +1,5 @@
-// context/PlayerContext.jsx
-import { createContext, useState, useEffect, useCallback } from "react";
-
-export const PlayerContext = createContext(null);
+import { useState, useEffect, useCallback } from "react";
+import { PlayerContext } from "./player-context-value";
 
 export function PlayerProvider({ children }) {
   const [queue, setQueue] = useState([]);
@@ -9,10 +7,6 @@ export function PlayerProvider({ children }) {
   const [mode, setMode] = useState("normal"); // "normal" | "shuffle" | "random"
   const [sourceTracks, setSourceTracks] = useState([]); // the unshuffled base list
 
-  // Rebuild queue whenever mode or the underlying track list changes.
-  // This MUST be an effect, not useMemo: shuffling uses Math.random, which
-  // is an impure function React forbids calling during render. An effect
-  // is the correct place for impure derived-state calculations like this.
   useEffect(() => {
     if (sourceTracks.length === 0) return;
     if (mode === "shuffle") {
@@ -21,17 +15,13 @@ export function PlayerProvider({ children }) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: derived queue depends on an impure shuffle (Math.random) that cannot live in render/useMemo
       setQueue(shuffled);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- see justification above
       setQueue([...sourceTracks]);
     }
     setIndex(null);
   }, [mode, sourceTracks]);
 
-  // Stable identity via useCallback so consumers (HomePage) can safely
-  // include this in a useEffect dependency array without infinite loops.
   const loadQueueSource = useCallback((tracksArray) => {
     setSourceTracks(tracksArray);
   }, []);
