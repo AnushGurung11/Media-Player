@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { usePlayer } from "../context/PlayerContext";
 
 function HomePage() {
-  const { isAdmin, handleLogout } = useAuth();
+  const { user,isAdmin, handleLogout } = useAuth();
   const { queue, mode, setMode, currentIndex, currentTrack, loadQueueSource, handlePlay, handleNext, handlePrev } = usePlayer();
 
   const [tracks, setTracks] = useState([]);

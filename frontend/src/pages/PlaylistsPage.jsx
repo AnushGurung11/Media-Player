@@ -6,9 +6,22 @@ import Player from "../components/Player";
 
 function PlaylistsPage() {
   const {
-    playlists, tracks, selected, loading, error,
-    showPicker, setShowPicker, pickerMsg,
-    handleCreate, handleOpen, handleAddSong, handleRemoveSong, handleDelete,
+    playlists,
+    tracks,
+    selected,
+    loading,
+    error,
+    showPicker,
+    setShowPicker,
+    pickerMsg,
+    setPickerMsg,
+    setSelected,
+    handleCreate,
+    handleOpen,
+    handleClose,
+    handleAddSong,
+    handleRemoveSong,
+    handleDelete,
   } = usePlaylists();
 
   const {
@@ -19,7 +32,7 @@ function PlaylistsPage() {
     setMode,
     handlePlay,
     handleNext,
-    handlePrev
+    handlePrev,
   } = usePlayer();
 
   // Form-only state — stays local, nothing else needs it
@@ -40,9 +53,14 @@ function PlaylistsPage() {
   };
   return (
     <div style={{ padding: "24px" }}>
-
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <h1>My Playlists</h1>
         <Link to="/">← Back to Player</Link>
       </div>
@@ -51,24 +69,32 @@ function PlaylistsPage() {
 
       {/* Global error */}
       {error && (
-        <div style={{ color: "red", border: "1px solid red", padding: "8px", marginBottom: "12px" }}>
+        <div
+          style={{
+            color: "red",
+            border: "1px solid red",
+            padding: "8px",
+            marginBottom: "12px",
+          }}
+        >
           <strong>Error:</strong> {error}
         </div>
       )}
 
       <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
-
         {/* ── Left column: playlist list + create ── */}
         <div style={{ minWidth: "260px" }}>
-
           {/* Create new playlist */}
           <h3>Create New Playlist</h3>
-          <form onSubmit={handleCreate} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+          <form onSubmit={onCreateSubmit} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
             <input
               type="text"
               placeholder="Playlist name"
               value={newName}
-              onChange={(e) => { setNewName(e.target.value); setCreateError(""); }}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setCreateError("");
+              }}
               style={{ flex: 1 }}
             />
             <button type="submit">+ Create</button>
@@ -88,19 +114,29 @@ function PlaylistsPage() {
           )}
 
           {playlists.map((pl) => (
-            <div key={pl._id}
+            <div
+              key={pl._id}
               style={{
                 border: "1px solid #ccc",
                 borderRadius: "4px",
                 padding: "10px",
                 marginBottom: "8px",
-                backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white"
-              }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
                   <strong>{pl.name}</strong>
                   <br />
-                  <small style={{ color: "gray" }}>{pl.songs?.length || 0} songs</small>
+                  <small style={{ color: "gray" }}>
+                    {pl.songs?.length || 0} songs
+                  </small>
                 </div>
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button onClick={() => handleOpen(pl)}>Open</button>
@@ -119,9 +155,15 @@ function PlaylistsPage() {
         {/* ── Right column: open playlist detail ── */}
         {selected && (
           <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <h2>📋 {selected.name}</h2>
-              <button onClick={() => setSelected(null)}>✕ Close</button>
+              <button onClick={handleClose}>✕ Close</button>
             </div>
 
             <p style={{ color: "gray" }}>
@@ -130,44 +172,53 @@ function PlaylistsPage() {
 
             {/* Add song button */}
             <button
-              onClick={() => { setShowPicker(!showPicker); setPickerMsg(""); }}
+              onClick={() => {
+                setShowPicker(!showPicker);
+                setPickerMsg("");
+              }}
               style={{ marginBottom: "12px" }}
             >
               {showPicker ? "✕ Close Song Picker" : "+ Add Songs"}
             </button>
 
             {pickerMsg && (
-              <p style={{ color: pickerMsg.startsWith("✅") ? "green" : "red" }}>
+              <p
+                style={{ color: pickerMsg.startsWith("✅") ? "green" : "red" }}
+              >
                 {pickerMsg}
               </p>
             )}
 
             {/* Song picker — all available tracks */}
             {showPicker && (
-              <div style={{
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "12px",
-                marginBottom: "16px",
-                maxHeight: "250px",
-                overflowY: "auto"
-              }}>
+              <div
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  padding: "12px",
+                  marginBottom: "16px",
+                  maxHeight: "250px",
+                  overflowY: "auto",
+                }}
+              >
                 <h4 style={{ marginTop: 0 }}>All Tracks — click to add:</h4>
                 {tracks.length === 0 && <p>No tracks available.</p>}
                 {tracks.map((track) => {
                   // Check if already in playlist
                   const alreadyAdded = selected.songs?.some(
-                    (s) => (s._id || s) === track._id
+                    (s) => (s._id || s) === track._id,
                   );
                   return (
-                    <div key={track._id}
+                    <div
+                      key={track._id}
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "6px 0",
-                        borderBottom: "1px solid #eee"
-                      }}>
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
                       <span>
                         <strong>{track.title}</strong> — {track.artist}
                       </span>
@@ -195,10 +246,11 @@ function PlaylistsPage() {
                   style={{
                     marginRight: "8px",
                     fontWeight: mode === m ? "bold" : "normal",
-                    textDecoration: mode === m ? "underline" : "none"
+                    textDecoration: mode === m ? "underline" : "none",
                   }}
                 >
-                  {mode === m ? "✓ " : ""}{m.charAt(0).toUpperCase() + m.slice(1)}
+                  {mode === m ? "✓ " : ""}
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
                 </button>
               ))}
             </div>
@@ -209,9 +261,12 @@ function PlaylistsPage() {
                 No songs yet. Click "+ Add Songs" to add some.
               </p>
             ) : (
-
-              <table border="1" cellPadding="8" cellSpacing="0"
-                style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table
+                border="1"
+                cellPadding="8"
+                cellSpacing="0"
+                style={{ width: "100%", borderCollapse: "collapse" }}
+              >
                 <thead>
                   <tr>
                     <th>#</th>
@@ -229,10 +284,19 @@ function PlaylistsPage() {
                     <tr key={song._id || song}>
                       <td>{index + 1}</td>
                       <td>
-                        {song.coverUrl
-                          ? <img src={song.coverUrl} alt={song.title}
-                            style={{ width: "36px", height: "36px", objectFit: "cover" }} />
-                          : "—"}
+                        {song.coverUrl ? (
+                          <img
+                            src={song.coverUrl}
+                            alt={song.title}
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td>{song.title || "—"}</td>
                       <td>{song.artist || "—"}</td>
@@ -243,8 +307,12 @@ function PlaylistsPage() {
                           : "—"}
                       </td>
                       <td>
-                        <button onClick={() => handlePlay(song)} style={{ marginRight: "6px" }}>
-                          {currentIndex !== null && queue[currentIndex]?._id === song._id
+                        <button
+                          onClick={() => handlePlay(song)}
+                          style={{ marginRight: "6px" }}
+                        >
+                          {currentIndex !== null &&
+                          queue[currentIndex]?._id === song._id
                             ? "▶ Playing"
                             : "▶ Play"}
                         </button>
@@ -257,13 +325,11 @@ function PlaylistsPage() {
                           Remove
                         </button>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-
           </div>
         )}
         <Player
