@@ -15,7 +15,6 @@ function PlaylistsPage() {
     setShowPicker,
     pickerMsg,
     setPickerMsg,
-    setSelected,
     handleCreate,
     handleOpen,
     handleClose,
@@ -27,7 +26,6 @@ function PlaylistsPage() {
   const {
     queue,
     currentIndex,
-    currentTrack,
     mode,
     setMode,
     handlePlay,
@@ -86,7 +84,10 @@ function PlaylistsPage() {
         <div style={{ minWidth: "260px" }}>
           {/* Create new playlist */}
           <h3>Create New Playlist</h3>
-          <form onSubmit={onCreateSubmit} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+          <form
+            onSubmit={onCreateSubmit}
+            style={{ display: "flex", gap: "8px", marginBottom: "8px" }}
+          >
             <input
               type="text"
               placeholder="Playlist name"
