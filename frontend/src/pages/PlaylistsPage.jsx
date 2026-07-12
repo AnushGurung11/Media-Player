@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePlaylists } from "../hooks/usePlaylists";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../hooks/usePlayer";
 import Player from "../components/Player";
 
 function PlaylistsPage() {
@@ -23,15 +23,7 @@ function PlaylistsPage() {
     handleDelete,
   } = usePlaylists();
 
-  const {
-    queue,
-    currentIndex,
-    mode,
-    setMode,
-    handlePlay,
-    handleNext,
-    handlePrev,
-  } = usePlayer();
+  const { queue, currentIndex, mode, setMode, handlePlay } = usePlayer();
 
   // Form-only state — stays local, nothing else needs it
   const [newName, setNewName] = useState("");
@@ -333,7 +325,7 @@ function PlaylistsPage() {
             )}
           </div>
         )}
-        <Player/>
+        <Player />
 
         {/* Prompt when no playlist is open */}
         {!selected && playlists.length > 0 && (

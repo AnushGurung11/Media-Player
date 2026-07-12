@@ -38,6 +38,7 @@ export function usePlaylists() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch-on-mount, not synchronous setState
     fetchPlaylists();
   }, [fetchPlaylists]);
 
@@ -49,11 +50,6 @@ export function usePlaylists() {
       prev.map((p) => (p._id === updatedPlaylist._id ? updatedPlaylist : p)),
     );
   };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch-on-mount, not synchronous setState
-    fetchPlaylists();
-  }, [fetchPlaylists]);
 
   const handleCreate = useCallback(async (name) => {
     const trimmed = name.trim();

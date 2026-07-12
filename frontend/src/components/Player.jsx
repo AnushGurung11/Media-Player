@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../services/api";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../hooks/usePlayer";
 
 function Player() {
   const { currentTrack, mode, handleNext, handlePrev } = usePlayer();

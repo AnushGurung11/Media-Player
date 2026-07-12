@@ -1,7 +1,7 @@
 // context/PlayerContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 
-const PlayerContext = createContext(null);
+export const PlayerContext = createContext(null);
 
 export function PlayerProvider({ children }) {
   const [queue, setQueue] = useState([]);
@@ -68,5 +68,3 @@ export function PlayerProvider({ children }) {
     </PlayerContext.Provider>
   );
 }
-
-export const usePlayer = () => useContext(PlayerContext);
