@@ -14,13 +14,20 @@ export function useTracks() {
       const res = await api.get("/tracks");
       setTracks(res.data);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || "Failed to load tracks.");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to load tracks.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadTracks(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch-on-mount, not synchronous setState
+    loadTracks();
+  }, []);
 
   return { tracks, setTracks, loading, error, loadTracks };
 }

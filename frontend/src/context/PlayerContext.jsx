@@ -1,7 +1,5 @@
-// context/PlayerContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
-
-const PlayerContext = createContext(null);
+import { useState, useEffect, useCallback } from "react";
+import { PlayerContext } from "./player-context-value";
 
 export function PlayerProvider({ children }) {
   const [queue, setQueue] = useState([]);
@@ -9,7 +7,6 @@ export function PlayerProvider({ children }) {
   const [mode, setMode] = useState("normal"); // "normal" | "shuffle" | "random"
   const [sourceTracks, setSourceTracks] = useState([]); // the unshuffled base list
 
-  // Rebuild queue whenever mode or the underlying track list changes
   useEffect(() => {
     if (sourceTracks.length === 0) return;
     if (mode === "shuffle") {
@@ -18,18 +15,18 @@ export function PlayerProvider({ children }) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: derived queue depends on an impure shuffle (Math.random) that cannot live in render/useMemo
       setQueue(shuffled);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see justification above
       setQueue([...sourceTracks]);
     }
     setIndex(null);
   }, [mode, sourceTracks]);
 
-  // Call this whenever a page loads a new list of tracks to play from
-  // (HomePage passes all tracks, Playlist passes selected.songs)
-  const loadQueueSource = (tracksArray) => {
+  const loadQueueSource = useCallback((tracksArray) => {
     setSourceTracks(tracksArray);
-  };
+  }, []);
 
   const handlePlay = (track) => {
     const index = queue.findIndex((t) => t._id === track._id);
@@ -63,5 +60,3 @@ export function PlayerProvider({ children }) {
     </PlayerContext.Provider>
   );
 }
-
-export const usePlayer = () => useContext(PlayerContext);
