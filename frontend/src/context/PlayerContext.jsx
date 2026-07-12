@@ -15,8 +15,10 @@ export function PlayerProvider({ children }) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: derived queue depends on an impure shuffle (Math.random) that cannot live in render/useMemo
       setQueue(shuffled);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see justification above
       setQueue([...sourceTracks]);
     }
     setIndex(null);
