@@ -14,21 +14,21 @@ function HomePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchTracks = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await api.get("/tracks");
-        setTracks(res.data);
-        loadQueueSource(res.data); // feeds PlayerContext's queue
-      } catch (err) {
-        setError(err.response?.data?.message || err.response?.data?.error || "Failed to load tracks. Check if the backend is running.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTracks();
-  }, []);
+  const fetchTracks = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.get("/tracks");
+      setTracks(res.data);
+      loadQueueSource(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || err.response?.data?.error || "Failed to load tracks. Check if the backend is running.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchTracks();
+}, [loadQueueSource]);
 
   return (
     <div style={{ padding: "16px" }}>

@@ -14,13 +14,19 @@ export function useTracks() {
       const res = await api.get("/tracks");
       setTracks(res.data);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || "Failed to load tracks.");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to load tracks.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadTracks(); }, []);
+  useEffect(() => {
+    loadTracks();
+  }, []);
 
   return { tracks, setTracks, loading, error, loadTracks };
 }

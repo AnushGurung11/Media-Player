@@ -30,7 +30,7 @@ export function usePlaylists() {
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
-          "Failed to load playlists."
+          "Failed to load playlists.",
       );
     } finally {
       setLoading(false);
@@ -46,9 +46,14 @@ export function usePlaylists() {
   const syncSelected = (updatedPlaylist) => {
     setSelected(updatedPlaylist);
     setPlaylists((prev) =>
-      prev.map((p) => (p._id === updatedPlaylist._id ? updatedPlaylist : p))
+      prev.map((p) => (p._id === updatedPlaylist._id ? updatedPlaylist : p)),
     );
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch-on-mount, not synchronous setState
+    fetchPlaylists();
+  }, [fetchPlaylists]);
 
   const handleCreate = useCallback(async (name) => {
     const trimmed = name.trim();
@@ -86,38 +91,48 @@ export function usePlaylists() {
     async (trackId) => {
       if (!selected) return;
       try {
-        const res = await api.post(`/playlists/${selected._id}/songs`, { trackId });
+        const res = await api.post(`/playlists/${selected._id}/songs`, {
+          trackId,
+        });
         const updatedPlaylist = res.data.playlist ?? res.data;
         syncSelected(updatedPlaylist);
         setPickerMsg("✅ Song added!");
       } catch (err) {
         setPickerMsg(
-          err.response?.data?.message || err.response?.data?.error || "Failed to add song."
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Failed to add song.",
         );
       }
     },
-    [selected]
+    [selected],
   );
 
   const handleRemoveSong = useCallback(
     async (songId) => {
       if (!selected) return;
       try {
-        const res = await api.delete(`/playlists/${selected._id}/songs/${songId}`);
+        const res = await api.delete(
+          `/playlists/${selected._id}/songs/${songId}`,
+        );
         const updatedPlaylist = res.data.playlist ?? res.data;
         syncSelected(updatedPlaylist);
       } catch (err) {
         setError(
-          err.response?.data?.message || err.response?.data?.error || "Failed to remove song."
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Failed to remove song.",
         );
       }
     },
-    [selected]
+    [selected],
   );
 
   const handleDelete = useCallback(
     async (playlist) => {
-      const confirmed = window.confirm(`Delete "${playlist.name}"? This can't be undone.`);
+      const confirmed = window.confirm(
+        `Delete "${playlist.name}"? This can't be undone.`,
+      );
       if (!confirmed) return;
 
       try {
@@ -128,11 +143,13 @@ export function usePlaylists() {
         }
       } catch (err) {
         setError(
-          err.response?.data?.message || err.response?.data?.error || "Failed to delete playlist."
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Failed to delete playlist.",
         );
       }
     },
-    [selected]
+    [selected],
   );
 
   return {
