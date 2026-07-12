@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
 import { PlayerProvider } from "./context/PlayerContext";
 
 import LoginPage from "./pages/LoginPage";
@@ -16,7 +17,7 @@ function PrivateRoute({ children }) {
 }
 
 function AdminRoute({ children }) {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const token = localStorage.getItem("token");
 
   if (!token) return <Navigate to="/login" replace />;
@@ -25,8 +26,6 @@ function AdminRoute({ children }) {
   return children;
 }
 
-// Small inner component so useAuth/usePlayer can be called
-// (they need to be inside the providers, which wrap this).
 function AppRoutes() {
   return (
     <Routes>
@@ -61,7 +60,6 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      {/* AuthProvider needs to be inside BrowserRouter because it calls useNavigate */}
       <AuthProvider>
         <PlayerProvider>
           <AppRoutes />

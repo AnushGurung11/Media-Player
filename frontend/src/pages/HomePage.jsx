@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Player from "../components/Player";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { usePlayer } from "../context/PlayerContext";
 
 function HomePage() {
@@ -174,12 +174,7 @@ function HomePage() {
         </div>
       )}
 
-      <Player
-        track={currentTrack}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        mode={mode}
-      />
+      <Player/>
     </div>
 
   );

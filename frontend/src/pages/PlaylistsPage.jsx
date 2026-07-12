@@ -333,12 +333,7 @@ function PlaylistsPage() {
             )}
           </div>
         )}
-        <Player
-          track={currentIndex !== null ? queue[currentIndex] : null}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          mode={mode}
-        />
+        <Player/>
 
         {/* Prompt when no playlist is open */}
         {!selected && playlists.length > 0 && (

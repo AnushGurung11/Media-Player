@@ -3,7 +3,7 @@ import api from "../services/api";
 import { usePlayer } from "../context/PlayerContext";
 
 function Player() {
-  const { currentTrack, handleNext } = usePlayer();
+  const { currentTrack, mode, handleNext, handlePrev } = usePlayer();
   const [streamUrl, setStreamUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +34,11 @@ function Player() {
     }
   }, [streamUrl]);
 
+  // Auto-advance to the next track when the current one finishes playing
+  const handleEnded = () => {
+    handleNext();
+  };
+
   if (!currentTrack) return null;
 
   return (
@@ -47,23 +52,23 @@ function Player() {
         {mode === "random"  && "Random (any song next)"}
       </p>
 
-      {track.coverUrl && (
+      {currentTrack.coverUrl && (
         <img
-          src={track.coverUrl}
-          alt={`${track.title} cover`}
+          src={currentTrack.coverUrl}
+          alt={`${currentTrack.title} cover`}
           style={{ width: "150px", height: "150px", objectFit: "cover", display: "block", marginBottom: "12px" }}
         />
       )}
 
-      <p><strong>Title:</strong>  {track.title}</p>
-      <p><strong>Artist:</strong> {track.artist}</p>
-      <p><strong>Album:</strong>  {track.album   || "—"}</p>
-      <p><strong>Genre:</strong>  {track.genre   || "—"}</p>
-      <p><strong>License:</strong>{track.license}</p>
+      <p><strong>Title:</strong>  {currentTrack.title}</p>
+      <p><strong>Artist:</strong> {currentTrack.artist}</p>
+      <p><strong>Album:</strong>  {currentTrack.album   || "—"}</p>
+      <p><strong>Genre:</strong>  {currentTrack.genre   || "—"}</p>
+      <p><strong>License:</strong>{currentTrack.license}</p>
       <p>
         <strong>Duration:</strong>{" "}
-        {track.duration
-          ? `${Math.floor(track.duration / 60)}m ${track.duration % 60}s`
+        {currentTrack.duration
+          ? `${Math.floor(currentTrack.duration / 60)}m ${currentTrack.duration % 60}s`
           : "Unknown"}
       </p>
 
@@ -89,15 +94,15 @@ function Player() {
 
       {/* Prev / Next controls */}
       <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
-        <button onClick={onPrev}>⏮ Previous</button>
-        <button onClick={onNext}>⏭ Next</button>
+        <button onClick={handlePrev}>⏮ Previous</button>
+        <button onClick={handleNext}>⏭ Next</button>
       </div>
 
-      {track.isDownloadable && (
+      {currentTrack.isDownloadable && (
         <p style={{ marginTop: "8px" }}>
-          <a href={`http://localhost:5000/api/tracks/${track._id}/download`}
+          <a href={`http://localhost:5000/api/tracks/${currentTrack._id}/download`}
              target="_blank" rel="noreferrer">
-            ⬇ Download ({track.license})
+            ⬇ Download ({currentTrack.license})
           </a>
         </p>
       )}
