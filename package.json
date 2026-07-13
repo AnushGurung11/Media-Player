@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+
+  "lint-staged":{
+    "frontend/**/*.{js,jsx}":["cd frontend && npx eslint --fix"], 
+    "backend/**/*.js":["cd backend && npx eslint --fix"]
+  }
+}
