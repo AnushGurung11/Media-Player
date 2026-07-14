@@ -3,27 +3,19 @@ const axios = require("axios");
 
 // -------------------------------------------------------
 // @route   GET /api/itunes/search?q=
-// @desc    Search songs from iTunes API
+// @desc    Search songs from iTunes API (30s preview only)
 // @access  Public
 // -------------------------------------------------------
 
-// Creating an async function 
 const searchItunes = async (req, res) => {
     try {
-
-        // q will get the request attached data
-        // Send by the client  
         const query = req.query.q;
 
-        // Checking for empty query
         if (!query) {
             return res.status(400).json({ message: "Search query is required" });
         }
 
-        // Call the iTunes Search API
-        // For making response
         const response = await axios.get("https://itunes.apple.com/search", {
-            // Making HTTP request to iTunes API with query parameters 
             params: {
                 term: query,
                 media: "music",
@@ -31,16 +23,23 @@ const searchItunes = async (req, res) => {
             }
         });
 
-        // iTunes returns a LOT of fields — we only map what our Song schema needs
+        // Mapped to look like our local Track objects (coverUrl, _id, etc.)
+        // so the same PlayerContext queue and <Player /> component can
+        // handle both local tracks and iTunes results without branching
+        // logic everywhere.
         const songs = response.data.results.map((item) => ({
+            _id: `itunes-${item.trackId}`,        // prefixed so it can never collide with a Mongo ObjectId
+            source: "itunes",                       // lets Player.jsx know NOT to call /tracks/:id/stream
             title: item.trackName,
             artist: item.artistName,
             album: item.collectionName,
             duration: item.trackTimeMillis ? Math.floor(item.trackTimeMillis / 1000) : null,
-            url: item.previewUrl,       // 30 second preview clip
-            coverArt: item.artworkUrl100,
+            url: item.previewUrl,                   // 30 second preview clip — used directly as <audio> src
+            coverUrl: item.artworkUrl100
+                ? item.artworkUrl100.replace("100x100bb", "300x300bb") // ask iTunes for a bigger image
+                : null,
             genre: item.primaryGenreName,
-            itunesId: item.trackId      // useful to prevent duplicate imports later
+            itunesId: item.trackId
         }));
 
         res.status(200).json(songs);

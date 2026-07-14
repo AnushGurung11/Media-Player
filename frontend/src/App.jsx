@@ -10,6 +10,7 @@ import AdminUpload from "./pages/admin/AdminUpload";
 import UserUpload from "./pages/UserUpload";
 import PlaylistsPage from "./pages/PlaylistsPage";
 import AdminTracks from "./pages/admin/AdminTracks";
+import DiscoverPage from "./pages/DiscoverPage";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -34,6 +35,10 @@ function AppRoutes() {
 
       <Route path="/" element={
         <PrivateRoute><HomePage /></PrivateRoute>
+      } />
+
+      <Route path="/discover" element={
+        <PrivateRoute><DiscoverPage /></PrivateRoute>
       } />
 
       <Route path="/admin/upload" element={

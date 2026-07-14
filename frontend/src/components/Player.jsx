@@ -11,6 +11,17 @@ function Player() {
 
   useEffect(() => {
     if (!currentTrack) return;
+
+    // iTunes results already carry a direct, playable preview URL —
+    // skip the backend stream lookup entirely for these.
+    if (currentTrack.source === "itunes") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- iTunes preview url is already known synchronously from currentTrack, no fetch needed
+      setStreamUrl(currentTrack.url);
+      setError("");
+      setLoading(false);
+      return;
+    }
+
     const fetchStreamUrl = async () => {
       setLoading(true);
       setError("");
@@ -34,16 +45,17 @@ function Player() {
     }
   }, [streamUrl]);
 
-  // Auto-advance to the next track when the current one finishes playing
   const handleEnded = () => {
     handleNext();
   };
 
   if (!currentTrack) return null;
 
+  const isPreview = currentTrack.source === "itunes";
+
   return (
     <div style={{ border: "2px solid black", padding: "16px", marginTop: "24px" }}>
-      <h2>Now Playing</h2>
+      <h2>Now Playing {isPreview && <span style={{ fontSize: "0.6em", color: "gray" }}>(30s preview via iTunes)</span>}</h2>
 
       <p>
         <strong>Mode:</strong>{" "}
@@ -64,12 +76,14 @@ function Player() {
       <p><strong>Artist:</strong> {currentTrack.artist}</p>
       <p><strong>Album:</strong>  {currentTrack.album   || "—"}</p>
       <p><strong>Genre:</strong>  {currentTrack.genre   || "—"}</p>
-      <p><strong>License:</strong>{currentTrack.license}</p>
+      <p><strong>License:</strong>{currentTrack.license || (isPreview ? "iTunes Preview" : "—")}</p>
       <p>
         <strong>Duration:</strong>{" "}
-        {currentTrack.duration
-          ? `${Math.floor(currentTrack.duration / 60)}m ${currentTrack.duration % 60}s`
-          : "Unknown"}
+        {isPreview
+          ? "~30s (preview clip)"
+          : currentTrack.duration
+            ? `${Math.floor(currentTrack.duration / 60)}m ${currentTrack.duration % 60}s`
+            : "Unknown"}
       </p>
 
       {loading && <p>Loading audio stream...</p>}
@@ -92,7 +106,6 @@ function Player() {
         </audio>
       )}
 
-      {/* Prev / Next controls */}
       <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
         <button onClick={handlePrev}>⏮ Previous</button>
         <button onClick={handleNext}>⏭ Next</button>

@@ -49,6 +49,9 @@ function HomePage() {
           <span>
             Logged in as: <strong>{user.username}</strong> ({user.role})
           </span>
+          <Link to="/discover">
+            <button style={{ marginRight: "8px" }}>🔍 Discover</button>
+          </Link>
           &nbsp;&nbsp;
           {/* NEW — only rendered for admins, links into the admin panel */}
           {isAdmin && (
