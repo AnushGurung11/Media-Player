@@ -26,6 +26,8 @@
     "uuid": "^14.0.1"
   },
   "devDependencies": {
+    "chai": "^6.2.2",
+    "mocha": "^8.4.0",
     "nodemon": "^3.1.14"
   }
 }
