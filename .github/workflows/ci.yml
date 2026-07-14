@@ -149,17 +149,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    name: Deploy
-    needs: [docker-backend, docker-frontend]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            docker compose pull
-            docker compose up -d
+  # deploy:
+  #   name: Deploy
+  #   needs: [docker-backend, docker-frontend]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+          # username: ${{ secrets.SSH_USER }}
+          # key: ${{ secrets.SSH_KEY }}
+  #         script: |
+  #           docker compose pull
+  #           docker compose up -d
