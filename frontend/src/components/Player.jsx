@@ -113,7 +113,7 @@ function Player() {
 
       {currentTrack.isDownloadable && (
         <p style={{ marginTop: "8px" }}>
-          <a href={`http://localhost:5000/api/tracks/${currentTrack._id}/download`}
+          <a href={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/tracks/${currentTrack._id}/download`}
              target="_blank" rel="noreferrer">
             ⬇ Download ({currentTrack.license})
           </a>
