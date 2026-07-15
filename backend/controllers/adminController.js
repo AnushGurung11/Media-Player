@@ -83,4 +83,117 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { getStats, getAllUsers, deleteUser };
+// -------------------------------------------------------
+// @route   GET /api/admin/analytics/users
+// @desc    Registration trend + active-hour distribution for charts
+// @access  Admin only
+// -------------------------------------------------------
+const getUserAnalytics = async (req, res) => {
+    try {
+        const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        // New registrations per day, last 30 days
+        const registrationsByDay = await User.aggregate([
+            { $match: { role: "user", createdAt: { $gte: THIRTY_DAYS_AGO } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } },
+            { $project: { _id: 0, date: "$_id", count: 1 } }
+        ]);
+
+        // NOTE: we only keep a single lastLogin timestamp per user, not a full
+        // login-history log — this is an approximation of peak activity hours,
+        // not a true session histogram.
+        const activeByHour = await User.aggregate([
+            { $match: { role: "user" } },
+            {
+                $group: {
+                    _id: { $hour: "$lastLogin" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } },
+            { $project: { _id: 0, hour: "$_id", count: 1 } }
+        ]);
+
+        res.status(200).json({ registrationsByDay, activeByHour });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   GET /api/admin/analytics/songs
+// @desc    Most played, most liked, and upload trend for charts
+// @access  Admin only
+// -------------------------------------------------------
+const getSongAnalytics = async (req, res) => {
+    try {
+        const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        const [mostPlayed, mostLiked, uploadsByDay] = await Promise.all([
+            Song.find({ uploadState: "completed" })
+                .sort({ playCount: -1 })
+                .limit(10)
+                .select("title artist playCount"),
+
+            Song.aggregate([
+                { $match: { uploadState: "completed" } },
+                { $project: { title: 1, artist: 1, likesCount: { $size: { $ifNull: ["$likedBy", []] } } } },
+                { $sort: { likesCount: -1 } },
+                { $limit: 10 }
+            ]),
+
+            Song.aggregate([
+                { $match: { createdAt: { $gte: THIRTY_DAYS_AGO } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                        count: { $sum: 1 }
+                    }
+                },
+                { $sort: { _id: 1 } },
+                { $project: { _id: 0, date: "$_id", count: 1 } }
+            ])
+        ]);
+
+        res.status(200).json({ mostPlayed, mostLiked, uploadsByDay });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   GET /api/admin/playlists
+// @desc    Get all playlists with owner + song count
+// @access  Admin only
+// -------------------------------------------------------
+const getAllPlaylists = async (req, res) => {
+    try {
+        const playlists = await Playlist.find()
+            .populate("user", "username email")
+            .populate("songs", "title artist");
+
+        const formatted = playlists.map((p) => ({
+            id: p._id,
+            name: p.name,
+            owner: p.user?.username || "Unknown",
+            songCount: p.songs.length,
+            shuffle: p.shuffle,
+            createdAt: p.createdAt
+        }));
+
+        res.status(200).json(formatted);
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { getStats, getAllUsers, deleteUser, getUserAnalytics, getSongAnalytics, getAllPlaylists };

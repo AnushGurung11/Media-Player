@@ -141,7 +141,7 @@ const getAllTracks = async (req, res) => {
                     .getPublicUrl(track.coverKey);
                 coverUrl = data.publicUrl;
             }
-            return { ...track.toObject(), coverUrl };
+           return { ...track.toObject(), coverUrl, likesCount: track.likedBy.length };
         });
 
         res.status(200).json(tracksWithUrls);
@@ -256,4 +256,41 @@ const deleteTrack = async (req, res) => {
     }
 };
 
-module.exports = { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack, deleteTrack };
+// -------------------------------------------------------
+// @route   POST /api/tracks/:id/like
+// @desc    Toggle like/unlike for the logged-in user
+// @access  Private (any logged-in user)
+// -------------------------------------------------------
+const toggleLike = async (req, res) => {
+    try {
+        const track = await Track.findById(req.params.id);
+
+        if (!track || track.uploadState !== "completed") {
+            return res.status(404).json({ message: "Track not found" });
+        }
+
+        const userId = req.user._id.toString();
+        const alreadyLiked = track.likedBy.some((id) => id.toString() === userId);
+
+        if (alreadyLiked) {
+            track.likedBy = track.likedBy.filter((id) => id.toString() !== userId);
+        } else {
+            track.likedBy.push(req.user._id);
+        }
+
+        await track.save();
+
+        res.status(200).json({
+            liked: !alreadyLiked,
+            likesCount: track.likedBy.length
+        });
+
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({ message: "Invalid track ID format" });
+        }
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack, deleteTrack, toggleLike };

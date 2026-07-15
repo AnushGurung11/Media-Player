@@ -4,6 +4,7 @@ import api from "../services/api";
 import Player from "../components/Player";
 import { useAuth } from "../hooks/useAuth";
 import { usePlayer } from "../hooks/usePlayer";
+import { useLikeTrack } from "../hooks/useLikeTrack";
 
 function HomePage() {
   const { user, isAdmin, handleLogout } = useAuth();
@@ -13,6 +14,24 @@ function HomePage() {
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // moved inside the component ↓
+  const { toggleLike, likingId } = useLikeTrack();
+  const [likeOverrides, setLikeOverrides] = useState({}); // trackId -> { liked, likesCount }
+
+  const handleToggleLike = async (track) => {
+    const result = await toggleLike(track._id);
+    if (result?.error) return;
+    setLikeOverrides((prev) => ({ ...prev, [track._id]: result }));
+  };
+
+  const getLikeState = (track) => {
+    if (likeOverrides[track._id]) return likeOverrides[track._id];
+    return {
+      liked: user?.id ? (track.likedBy || []).includes(user.id) : false,
+      likesCount: track.likesCount ?? (track.likedBy || []).length,
+    };
+  };
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -170,6 +189,7 @@ function HomePage() {
                 <th>Duration</th>
                 <th>License</th>
                 <th>Plays</th>
+                <th>Likes</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -209,6 +229,15 @@ function HomePage() {
                   </td>
                   <td>{track.license}</td>
                   <td>{track.playCount}</td>
+                  <td>
+                    <button
+                      onClick={() => handleToggleLike(track)}
+                      disabled={likingId === track._id}
+                    >
+                      {getLikeState(track).liked ? "❤" : "🤍"}{" "}
+                      {getLikeState(track).likesCount}
+                    </button>
+                  </td>
                   <td>
                     <button onClick={() => handlePlay(track)}>
                       {currentIndex === index ? "▶ Playing" : "▶ Play"}

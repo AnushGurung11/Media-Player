@@ -48,6 +48,7 @@ const trackSchema = new mongoose.Schema( //Creating a schema for the song model
 
         //  Counting the number of times the song has been played
         playCount: {type: Number, default: 0},
+        likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
 
     },
