@@ -15,6 +15,7 @@ const {
     streamTrack,
     downloadTrack,
     deleteTrack,
+    toggleLike,
 } = require("../controllers/trackController");
 
 const upload = multer({
@@ -34,6 +35,7 @@ router.get("/", getAllTracks);
 // Authenticated (any logged-in user)
 router.get("/:id/stream", protect, streamTrack);
 router.get("/:id/download", protect, downloadTrack);
+router.post("/:id/like", protect, toggleLike);
 
 // Admin only — FIX: previously had no role check, any logged-in user could upload
 router.post("/preview", protect, previewFields, previewTrack);

@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 const navItems = [
+  { to: "/admin/dashboard", label: "Dashboard" },
   { to: "/admin/upload", label: "Upload Track" },
   { to: "/admin/tracks", label: "Manage Tracks" },
 ];
