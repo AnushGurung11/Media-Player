@@ -5,11 +5,13 @@ import Player from "../components/Player";
 import { useAuth } from "../hooks/useAuth";
 import { usePlayer } from "../hooks/usePlayer";
 import { useLikeTrack } from "../hooks/useLikeTrack";
+import { usePlaylists } from "../hooks/usePlaylists";
 
 function HomePage() {
   const { user, isAdmin, handleLogout } = useAuth();
   const { queue, mode, setMode, currentIndex, loadQueueSource, handlePlay } =
     usePlayer();
+  const { playlists, loading: playlistsLoading } = usePlaylists();
 
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +145,60 @@ function HomePage() {
         </span>
       </div>
 
-      {loading && <p>Loading tracks...</p>}
+      {/* Playlists — your own + any public (admin) ones */}
+      <div style={{ marginBottom: "24px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h2>Playlists {playlists.length > 0 && `(${playlists.length})`}</h2>
+          <Link to="/playlists">
+            <button>Manage Playlists →</button>
+          </Link>
+        </div>
+
+        {playlistsLoading && <p>Loading playlists...</p>}
+
+        {!playlistsLoading && playlists.length === 0 && (
+          <p style={{ color: "gray" }}>
+            No playlists yet. Create one from the Playlists page.
+          </p>
+        )}
+
+        {!playlistsLoading && playlists.length > 0 && (
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            {playlists.map((pl) => (
+              <Link
+                key={pl._id}
+                to="/playlists"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <div
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "6px",
+                    padding: "10px 14px",
+                    minWidth: "160px",
+                  }}
+                >
+                  <strong>{pl.name}</strong>
+                  {!pl.isOwner && (
+                    <div style={{ fontSize: "0.75em", color: "#4f46e5" }}>
+                      🌐 Admin · Public
+                    </div>
+                  )}
+                  <div style={{ color: "gray", fontSize: "0.85em" }}>
+                    {pl.songs?.length || 0} songs
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {error && (
         <div
