@@ -14,8 +14,8 @@ const { protect } = require("../middleware/authMiddleware");
 router.get("/", protect, getPlaylists);
 router.get("/:id", protect, getPlaylistById);
 router.post("/", protect, createPlaylist);
-router.put("/:id/add", protect, addSongToPlaylist);
-router.put("/:id/remove", protect, removeSongFromPlaylist);
+router.post("/:id/songs", protect, addSongToPlaylist);
+router.delete("/:id/songs/:songId", protect, removeSongFromPlaylist);
 router.delete("/:id", protect, deletePlaylist);
 
 module.exports = router;

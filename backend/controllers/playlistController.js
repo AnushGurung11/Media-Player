@@ -3,17 +3,24 @@ const supabase = require("../config/supabase").supabase;
 
 // -------------------------------------------------------
 // @route   GET /api/playlists
-// @desc    Get all playlists for logged in user
+// @desc    Get playlists visible to the logged-in user:
+//          their own playlists + any public (admin-created) playlists
 // @access  Protected
 // -------------------------------------------------------
 const getPlaylists = async (req, res) => {
     try {
-        // Only get playlists belonging to logged in user
-        // req.user._id comes from authMiddleware
-        const playlists = await Playlist.find({ user: req.user._id })
-            .populate("songs"); // populate replaces song IDs with actual song data
-        
-        res.status(200).json(playlists);
+        const playlists = await Playlist.find({
+            $or: [{ user: req.user._id }, { isPublic: true }]
+        })
+            .populate("songs")
+            .populate("user", "username");
+
+        const formatted = playlists.map((p) => ({
+            ...p.toObject(),
+            isOwner: p.user?._id?.toString() === req.user._id.toString()
+        }));
+
+        res.status(200).json(formatted);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
@@ -21,23 +28,26 @@ const getPlaylists = async (req, res) => {
 
 // -------------------------------------------------------
 // @route   GET /api/playlists/:id
-// @desc    Get single playlist with all songs
+// @desc    Get single playlist with all songs — accessible if
+//          the requester owns it, or it's public (admin-created)
 // @access  Protected
 // -------------------------------------------------------
 const getPlaylistById = async (req, res) => {
     try {
         const playlist = await Playlist.findById(req.params.id)
-            .populate("songs");
+            .populate("songs")
+            .populate("user", "username");
 
         if (!playlist) {
             return res.status(404).json({ message: "Playlist not found" });
         }
 
-        if (playlist.user.toString() !== req.user._id.toString()) {
+        const isOwner = playlist.user?._id?.toString() === req.user._id.toString();
+
+        if (!isOwner && !playlist.isPublic) {
             return res.status(403).json({ message: "Not authorized" });
         }
 
-        // ✅ Add coverUrl to each song — same pattern as getAllTracks
         const songsWithUrls = playlist.songs.map((song) => {
             let coverUrl = null;
             if (song.coverKey) {
@@ -51,7 +61,8 @@ const getPlaylistById = async (req, res) => {
 
         res.status(200).json({
             ...playlist.toObject(),
-            songs: songsWithUrls
+            songs: songsWithUrls,
+            isOwner
         });
 
     } catch (error) {
@@ -61,7 +72,8 @@ const getPlaylistById = async (req, res) => {
 
 // -------------------------------------------------------
 // @route   POST /api/playlists
-// @desc    Create a new playlist
+// @desc    Create a new playlist. Admin-created playlists are
+//          public (visible to everyone); user playlists are private.
 // @access  Protected
 // -------------------------------------------------------
 const createPlaylist = async (req, res) => {
@@ -74,13 +86,14 @@ const createPlaylist = async (req, res) => {
 
         const playlist = await Playlist.create({
             name,
-            user: req.user._id, // attach logged in user as owner
-            songs: []
+            user: req.user._id,
+            songs: [],
+            isPublic: req.user.role === "admin"
         });
 
         res.status(201).json({
             message: "Playlist created successfully",
-            playlist
+            playlist: { ...playlist.toObject(), isOwner: true }
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -88,13 +101,17 @@ const createPlaylist = async (req, res) => {
 };
 
 // -------------------------------------------------------
-// @route   PUT /api/playlists/:id/add
-// @desc    Add a song to a playlist
+// @route   POST /api/playlists/:id/songs
+// @desc    Add a song to a playlist (owner only)
 // @access  Protected
 // -------------------------------------------------------
 const addSongToPlaylist = async (req, res) => {
     try {
-        const { songId } = req.body;
+        const { trackId } = req.body;
+
+        if (!trackId) {
+            return res.status(400).json({ message: "trackId is required" });
+        }
 
         const playlist = await Playlist.findById(req.params.id);
 
@@ -102,23 +119,27 @@ const addSongToPlaylist = async (req, res) => {
             return res.status(404).json({ message: "Playlist not found" });
         }
 
-        // Check ownership
         if (playlist.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Not authorized" });
         }
 
-        // Check if song already exists in playlist
-        if (playlist.songs.includes(songId)) {
+        // FIX: Array.includes() on an ObjectId array never matches a plain
+        // string — it compares object references, so this always returned
+        // false and the duplicate check silently did nothing.
+        const alreadyAdded = playlist.songs.some(
+            (id) => id.toString() === trackId
+        );
+        if (alreadyAdded) {
             return res.status(400).json({ message: "Song already in playlist" });
         }
 
-        // $push adds songId to the songs array in MongoDB
-        playlist.songs.push(songId);
+        playlist.songs.push(trackId);
         await playlist.save();
+        await playlist.populate("songs");
 
         res.status(200).json({
             message: "Song added to playlist",
-            playlist
+            playlist: { ...playlist.toObject(), isOwner: true }
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -126,13 +147,13 @@ const addSongToPlaylist = async (req, res) => {
 };
 
 // -------------------------------------------------------
-// @route   PUT /api/playlists/:id/remove
-// @desc    Remove a song from a playlist
+// @route   DELETE /api/playlists/:id/songs/:songId
+// @desc    Remove a song from a playlist (owner only)
 // @access  Protected
 // -------------------------------------------------------
 const removeSongFromPlaylist = async (req, res) => {
     try {
-        const { songId } = req.body;
+        const { songId } = req.params;
 
         const playlist = await Playlist.findById(req.params.id);
 
@@ -140,20 +161,19 @@ const removeSongFromPlaylist = async (req, res) => {
             return res.status(404).json({ message: "Playlist not found" });
         }
 
-        // Check ownership
         if (playlist.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Not authorized" });
         }
 
-        // $pull removes the songId from songs array in MongoDB
         playlist.songs = playlist.songs.filter(
             (id) => id.toString() !== songId
         );
         await playlist.save();
+        await playlist.populate("songs");
 
         res.status(200).json({
             message: "Song removed from playlist",
-            playlist
+            playlist: { ...playlist.toObject(), isOwner: true }
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -162,7 +182,7 @@ const removeSongFromPlaylist = async (req, res) => {
 
 // -------------------------------------------------------
 // @route   DELETE /api/playlists/:id
-// @desc    Delete a playlist
+// @desc    Delete a playlist (owner only)
 // @access  Protected
 // -------------------------------------------------------
 const deletePlaylist = async (req, res) => {
@@ -173,7 +193,6 @@ const deletePlaylist = async (req, res) => {
             return res.status(404).json({ message: "Playlist not found" });
         }
 
-        // Check ownership
         if (playlist.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Not authorized" });
         }

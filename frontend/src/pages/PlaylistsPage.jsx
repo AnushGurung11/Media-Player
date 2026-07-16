@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePlaylists } from "../hooks/usePlaylists";
 import { usePlayer } from "../hooks/usePlayer";
 import Player from "../components/Player";
+import { useAuth } from "../hooks/useAuth";
+import { useLikeTrack } from "../hooks/useLikeTrack";
 
 function PlaylistsPage() {
   const {
@@ -23,7 +25,10 @@ function PlaylistsPage() {
     handleDelete,
   } = usePlaylists();
 
-  const { queue, currentIndex, mode, setMode, handlePlay } = usePlayer();
+  const { queue, currentIndex, mode, setMode, handlePlay, playList, loadQueueSource } = usePlayer();
+  const { user } = useAuth();
+  const { toggleLike, likingId } = useLikeTrack();
+  const [likeOverrides, setLikeOverrides] = useState({});
 
   // Form-only state — stays local, nothing else needs it
   const [newName, setNewName] = useState("");
@@ -41,6 +46,29 @@ function PlaylistsPage() {
       setNewName("");
     }
   };
+
+  const handleToggleLike = async (song) => {
+    const result = await toggleLike(song._id);
+    if (result?.error) return;
+    setLikeOverrides((prev) => ({ ...prev, [song._id]: result }));
+  };
+
+  const getLikeState = (song) => {
+    if (likeOverrides[song._id]) return likeOverrides[song._id];
+    return {
+      liked: user?.id ? (song.likedBy || []).includes(user.id) : false,
+      likesCount: song.likesCount ?? (song.likedBy || []).length,
+    };
+  };
+
+  // Load this playlist's songs into the player queue as soon as it's opened,
+  // so individual "▶ Play" buttons below actually find the track.
+  useEffect(() => {
+    if (selected?.songs?.length > 0) {
+      loadQueueSource(selected.songs);
+    }
+  }, [selected, loadQueueSource]);
+
   return (
     <div style={{ padding: "24px" }}>
       {/* Header */}
@@ -98,7 +126,7 @@ function PlaylistsPage() {
           <hr />
 
           {/* Playlist list */}
-          <h3>Your Playlists ({playlists.length})</h3>
+          <h3>Playlists ({playlists.length})</h3>
 
           {loading && <p>Loading...</p>}
 
@@ -108,15 +136,15 @@ function PlaylistsPage() {
 
           {playlists.map((pl) => (
             <div
-              key={pl._id}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "10px",
-                marginBottom: "8px",
-                backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white",
-              }}
-            >
+                key={pl._id}
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  padding: "10px",
+                  marginBottom: "8px",
+                  backgroundColor: selected?._id === pl._id ? "#e8f0ff" : "white",
+                }}
+              >
               <div
                 style={{
                   display: "flex",
@@ -125,7 +153,12 @@ function PlaylistsPage() {
                 }}
               >
                 <div>
-                  <strong>{pl.name}</strong>
+                  <strong>{pl.name}</strong>{" "}
+                  {!pl.isOwner && (
+                    <span style={{ fontSize: "0.75em", color: "#4f46e5" }}>
+                      🌐 Admin · Public
+                    </span>
+                  )}
                   <br />
                   <small style={{ color: "gray" }}>
                     {pl.songs?.length || 0} songs
@@ -133,12 +166,14 @@ function PlaylistsPage() {
                 </div>
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button onClick={() => handleOpen(pl)}>Open</button>
-                  <button
-                    onClick={() => handleDelete(pl)}
-                    style={{ color: "red" }}
-                  >
-                    Delete
-                  </button>
+                  {pl.isOwner && (
+                    <button
+                      onClick={() => handleDelete(pl)}
+                      style={{ color: "red" }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -155,24 +190,20 @@ function PlaylistsPage() {
                 alignItems: "center",
               }}
             >
-              <h2>📋 {selected.name}</h2>
+              <h2>
+                📋 {selected.name}{" "}
+                {!selected.isOwner && (
+                  <span style={{ fontSize: "0.5em", color: "#4f46e5" }}>
+                    🌐 Public (Admin)
+                  </span>
+                )}
+              </h2>
               <button onClick={handleClose}>✕ Close</button>
             </div>
 
             <p style={{ color: "gray" }}>
               {selected.songs?.length || 0} songs in this playlist
             </p>
-
-            {/* Add song button */}
-            <button
-              onClick={() => {
-                setShowPicker(!showPicker);
-                setPickerMsg("");
-              }}
-              style={{ marginBottom: "12px" }}
-            >
-              {showPicker ? "✕ Close Song Picker" : "+ Add Songs"}
-            </button>
 
             {pickerMsg && (
               <p
@@ -228,25 +259,51 @@ function PlaylistsPage() {
               </div>
             )}
 
-            {/* For the option of suffleing and randomizing the music order */}
-            {/* Playback mode controls */}
-            <div style={{ marginBottom: "12px" }}>
-              <strong>Mode: </strong>
-              {["normal", "shuffle", "random"].map((m) => (
+            {/* Playback controls for this playlist */}
+            <div style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+              <div>
                 <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  style={{
-                    marginRight: "8px",
-                    fontWeight: mode === m ? "bold" : "normal",
-                    textDecoration: mode === m ? "underline" : "none",
-                  }}
+                  onClick={() => playList(selected.songs, { shuffled: false })}
+                  style={{ marginRight: "8px" }}
                 >
-                  {mode === m ? "✓ " : ""}
-                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                  ▶ Play from Start
                 </button>
-              ))}
+                <button onClick={() => playList(selected.songs, { shuffled: true })}>
+                  🔀 Randomize & Play
+                </button>
+              </div>
+
+              <div>
+                <strong>Mode: </strong>
+                {["normal", "shuffle", "random"].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    style={{
+                      marginRight: "8px",
+                      fontWeight: mode === m ? "bold" : "normal",
+                      textDecoration: mode === m ? "underline" : "none",
+                    }}
+                  >
+                    {mode === m ? "✓ " : ""}
+                    {m.charAt(0).toUpperCase() + m.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Add song button — owner only */}
+            {selected.isOwner && (
+              <button
+                onClick={() => {
+                  setShowPicker(!showPicker);
+                  setPickerMsg("");
+                }}
+                style={{ marginBottom: "12px" }}
+              >
+                {showPicker ? "✕ Close Song Picker" : "+ Add Songs"}
+              </button>
+            )}
 
             {/* Songs in this playlist */}
             {selected.songs?.length === 0 ? (
@@ -262,15 +319,18 @@ function PlaylistsPage() {
               >
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Cover</th>
-                    <th>Title</th>
-                    <th>Artist</th>
-                    <th>Album</th>
-                    <th>Duration</th>
-                    <th>Play</th>
-                    <th>Remove</th>
-                  </tr>
+                  <th>#</th>
+                  <th>Cover</th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th>Album</th>
+                  <th>Genre</th>
+                  <th>Duration</th>
+                  <th>Plays</th>
+                  <th>Likes</th>
+                  <th>Play</th>
+                  <th>Remove</th>
+                </tr>
                 </thead>
                 <tbody>
                   {selected.songs.map((song, index) => (
@@ -294,10 +354,20 @@ function PlaylistsPage() {
                       <td>{song.title || "—"}</td>
                       <td>{song.artist || "—"}</td>
                       <td>{song.album || "—"}</td>
+                      <td>{song.genre || "—"}</td>
                       <td>
                         {song.duration
                           ? `${Math.floor(song.duration / 60)}:${String(song.duration % 60).padStart(2, "0")}`
                           : "—"}
+                      </td>
+                      <td>{song.playCount ?? "—"}</td>
+                      <td>
+                        <button
+                          onClick={() => handleToggleLike(song)}
+                          disabled={likingId === song._id}
+                        >
+                          {getLikeState(song).liked ? "❤" : "🤍"} {getLikeState(song).likesCount}
+                        </button>
                       </td>
                       <td>
                         <button
@@ -311,12 +381,14 @@ function PlaylistsPage() {
                         </button>
                       </td>
                       <td>
-                        <button
-                          onClick={() => handleRemoveSong(song._id || song)}
-                          style={{ color: "red" }}
-                        >
-                          Remove
-                        </button>
+                        {selected.isOwner && (
+                          <button
+                            onClick={() => handleRemoveSong(song._id || song)}
+                            style={{ color: "red" }}
+                          >
+                            Remove
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
