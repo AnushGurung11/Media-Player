@@ -12,8 +12,6 @@ function Player() {
   useEffect(() => {
     if (!currentTrack) return;
 
-    // iTunes results already carry a direct, playable preview URL —
-    // skip the backend stream lookup entirely for these.
     if (currentTrack.source === "itunes") {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- iTunes preview url is already known synchronously from currentTrack, no fetch needed
       setStreamUrl(currentTrack.url);
@@ -54,71 +52,53 @@ function Player() {
   const isPreview = currentTrack.source === "itunes";
 
   return (
-    <div style={{ border: "2px solid black", padding: "16px", marginTop: "24px" }}>
-      <h2>Now Playing {isPreview && <span style={{ fontSize: "0.6em", color: "gray" }}>(30s preview via iTunes)</span>}</h2>
-
-      <p>
-        <strong>Mode:</strong>{" "}
-        {mode === "normal"  && "Normal (sequential)"}
-        {mode === "shuffle" && "Shuffle (random order)"}
-        {mode === "random"  && "Random (any song next)"}
-      </p>
-
-      {currentTrack.coverUrl && (
-        <img
-          src={currentTrack.coverUrl}
-          alt={`${currentTrack.title} cover`}
-          style={{ width: "150px", height: "150px", objectFit: "cover", display: "block", marginBottom: "12px" }}
-        />
-      )}
-
-      <p><strong>Title:</strong>  {currentTrack.title}</p>
-      <p><strong>Artist:</strong> {currentTrack.artist}</p>
-      <p><strong>Album:</strong>  {currentTrack.album   || "—"}</p>
-      <p><strong>Genre:</strong>  {currentTrack.genre   || "—"}</p>
-      <p><strong>License:</strong>{currentTrack.license || (isPreview ? "iTunes Preview" : "—")}</p>
-      <p>
-        <strong>Duration:</strong>{" "}
-        {isPreview
-          ? "~30s (preview clip)"
-          : currentTrack.duration
-            ? `${Math.floor(currentTrack.duration / 60)}m ${currentTrack.duration % 60}s`
-            : "Unknown"}
-      </p>
-
-      {loading && <p>Loading audio stream...</p>}
-
-      {error && (
-        <div style={{ color: "red", border: "1px solid red", padding: "8px" }}>
-          <strong>Stream Error:</strong> {error}
+    <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border px-4 py-3 flex items-center gap-4 z-50">
+      {/* Track info */}
+      <div className="flex items-center gap-3 w-64 min-w-0 shrink-0">
+        <span className="w-2 h-2 rounded-full bg-blood animate-pulse shrink-0" />
+        {currentTrack.coverUrl ? (
+          <img src={currentTrack.coverUrl} alt={currentTrack.title} className="w-12 h-12 object-cover rounded shrink-0" />
+        ) : (
+          <div className="w-12 h-12 rounded bg-surface-2 shrink-0" />
+        )}
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate">{currentTrack.title}</p>
+          <p className="text-xs text-muted truncate">{currentTrack.artist}</p>
         </div>
-      )}
-
-      {streamUrl && (
-        <audio
-          ref={audioRef}
-          controls
-          onEnded={handleEnded}
-          style={{ width: "100%", marginTop: "12px" }}
-        >
-          <source src={streamUrl} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
-      )}
-
-      <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
-        <button onClick={handlePrev}>⏮ Previous</button>
-        <button onClick={handleNext}>⏭ Next</button>
       </div>
 
-      {currentTrack.isDownloadable && (
-        <p style={{ marginTop: "8px" }}>
-          <a href={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/tracks/${currentTrack._id}/download`}
-             target="_blank" rel="noreferrer">
-            ⬇ Download ({currentTrack.license})
+      {/* Controls + audio */}
+      <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+        <div className="flex items-center gap-5">
+          <button onClick={handlePrev} className="text-muted hover:text-text transition-colors">⏮</button>
+          <button onClick={handleNext} className="text-muted hover:text-text transition-colors">⏭</button>
+        </div>
+        {loading && <p className="text-xs text-muted">Loading...</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
+        {streamUrl && (
+          <audio ref={audioRef} controls onEnded={handleEnded} className="w-full max-w-md h-8">
+            <source src={streamUrl} type="audio/mpeg" />
+          </audio>
+        )}
+      </div>
+
+      {/* Meta */}
+      <div className="w-48 flex items-center justify-end gap-2 shrink-0">
+        {isPreview && <span className="badge">Preview</span>}
+        <span className="text-xs text-muted hidden md:inline">
+          {mode === "normal" ? "Normal" : mode === "shuffle" ? "Shuffle" : "Random"}
+        </span>
+        {currentTrack.isDownloadable && (
+          <a
+            href={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/tracks/${currentTrack._id}/download`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-ghost !px-2 !py-1 text-xs"
+          >
+            ⬇
           </a>
-        </p>
-      )}
+        )}
+      </div>
     </div>
   );
 }

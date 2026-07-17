@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { PlayerProvider } from "./context/PlayerContext";
+import Layout from "./components/Layout";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -34,67 +35,33 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <HomePage />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/" element={
+        <PrivateRoute><Layout><HomePage /></Layout></PrivateRoute>
+      } />
 
-      <Route
-        path="/discover"
-        element={
-          <PrivateRoute>
-            <DiscoverPage />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/discover" element={
+        <PrivateRoute><Layout><DiscoverPage /></Layout></PrivateRoute>
+      } />
 
-      <Route
-        path="/admin/upload"
-        element={
-          <AdminRoute>
-            <AdminUpload />
-          </AdminRoute>
-        }
-      />
+      <Route path="/upload" element={
+        <PrivateRoute><Layout><UserUpload /></Layout></PrivateRoute>
+      } />
 
-      <Route
-        path="/admin/tracks"
-        element={
-          <AdminRoute>
-            <AdminTracks />
-          </AdminRoute>
-        }
-      />
+      <Route path="/playlists" element={
+        <PrivateRoute><Layout><PlaylistsPage /></Layout></PrivateRoute>
+      } />
 
-      <Route
-        path="/upload"
-        element={
-          <PrivateRoute>
-            <UserUpload />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        }
-      />
+      <Route path="/admin/upload" element={
+        <AdminRoute><AdminUpload /></AdminRoute>
+      } />
 
-      <Route
-        path="/playlists"
-        element={
-          <PrivateRoute>
-            <PlaylistsPage />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/admin/tracks" element={
+        <AdminRoute><AdminTracks /></AdminRoute>
+      } />
+
+      <Route path="/admin/dashboard" element={
+        <AdminRoute><AdminDashboard /></AdminRoute>
+      } />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
