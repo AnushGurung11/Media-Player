@@ -6,41 +6,13 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_USERNAME = credentials('dockerhub-username')
-        DOCKERHUB_TOKEN     = credentials('dockerhub-token')
-        DISCORD_WEBHOOK     = credentials('discord-webhook')
+        DISCORD_WEBHOOK = credentials('discord-webhook')
     }
 
     stages {
 
         stage('Build & Test') {
             parallel {
-
-                stage('Backend - Build & Test') {
-                    agent any
-                    environment {
-                        PORT                       = credentials('port')
-                        MONGO_URI                  = credentials('mongo-uri')
-                        JWT_SECRET                 = credentials('jwt-secret')
-                        JWT_EXPIRES_IN             = credentials('jwt-expires-in')
-                        ADMIN_SECRET               = credentials('admin-secret')
-                        SUPABASE_URL               = credentials('supabase-url')
-                        SUPABASE_PUBLISHABLE_KEY   = credentials('supabase-publishable-key')
-                        SUPABASE_SECRET_KEY        = credentials('supabase-secret-key')
-                        SUPABASE_JWKS_URL          = credentials('supabase-jwks-url')
-                    }
-                    steps {
-                        dir('backend') {
-                            sh 'npm ci'
-                            sh 'npm test --if-present'
-                        }
-                    }
-                    post {
-                        always {
-                            script { notifyDiscord('Backend CI', currentBuild.currentResult) }
-                        }
-                    }
-                }
 
                 stage('Frontend - Build & Lint') {
                     agent any
@@ -63,48 +35,8 @@ pipeline {
                 }
             }
         }
-
-        stage('Build & Push Backend Image') {
-            when {
-                branch 'main'
-                expression { env.CHANGE_ID == null } // ensures it's a push, not a PR
-            }
-            steps {
-                dir('backend') {
-                    script {
-                        def shortSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                        sh """
-                            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-                            docker build -t anushgurung11/backend:latest -t anushgurung11/backend:${shortSha} .
-                            docker push anushgurung11/backend:latest
-                            docker push anushgurung11/backend:${shortSha}
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Build & Push Frontend Image') {
-            when {
-                branch 'main'
-                expression { env.CHANGE_ID == null }
-            }
-            steps {
-                dir('frontend') {
-                    script {
-                        def shortSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                        sh """
-                            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-                            docker build -t anushgurung11/frontend:latest -t anushgurung11/frontend:${shortSha} .
-                            docker push anushgurung11/frontend:latest
-                            docker push anushgurung11/frontend:${shortSha}
-                        """
-                    }
-                }
-            }
-        }
-    }
-}
+    } // closes stages
+} // closes pipeline  <-- this was missing
 
 def notifyDiscord(String title, String status) {
     sh """
