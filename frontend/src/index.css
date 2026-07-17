@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -12,8 +11,8 @@
   --color-blood-hover: #ef4444;
   --color-blood-dim: #7f1d1d;
 
-  --font-display: "Syne", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -21,7 +20,7 @@ body {
 }
 
 h1, h2, h3 {
-  @apply font-display font-extrabold tracking-tight;
+  @apply font-display font-bold tracking-tight;
 }
 
 @layer components {

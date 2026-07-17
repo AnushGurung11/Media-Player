@@ -1,3 +1,4 @@
+// frontend/src/components/TrackUploadForm.jsx
 import PropTypes from "prop-types";
 import { useTrackUpload } from "../hooks/useTrackUpload";
 
@@ -11,11 +12,30 @@ const LICENSE_OPTIONS = [
 ];
 
 const TEXT_FIELDS = [
-  { name: "title", label: "Title *", required: true, placeholder: "Song title" },
-  { name: "artist", label: "Artist *", required: true, placeholder: "Artist name" },
+  { name: "title", label: "Title", required: true, placeholder: "Song title" },
+  { name: "artist", label: "Artist", required: true, placeholder: "Artist name" },
   { name: "album", label: "Album", required: false, placeholder: "Album (optional)" },
   { name: "genre", label: "Genre", required: false, placeholder: "Genre (optional)" },
 ];
+
+const fileInputClass =
+  "text-sm text-muted cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md " +
+  "file:border-0 file:bg-blood file:text-white file:text-sm file:font-medium " +
+  "hover:file:bg-blood-hover file:cursor-pointer";
+
+function Step({ number, title, children }) {
+  return (
+    <div className="card">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="w-6 h-6 rounded-full bg-blood-dim/40 text-red-300 text-xs font-bold flex items-center justify-center shrink-0">
+          {number}
+        </span>
+        <h3 className="text-base">{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function TrackUploadForm({ onSuccess }) {
   const {
@@ -39,162 +59,128 @@ function TrackUploadForm({ onSuccess }) {
   } = useTrackUpload(onSuccess);
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
       {/* Step 1 — Audio file */}
-      <section>
-        <h3>Step 1 — Select Audio File</h3>
+      <Step number={1} title="Select Audio File">
         <input
           ref={audioInputRef}
           type="file"
           accept="audio/mpeg,audio/wav,audio/mp4,audio/flac,audio/ogg"
           onChange={handleAudioChange}
           aria-label="Audio file"
+          className={fileInputClass}
         />
 
-        {previewLoading && (
-          <p role="status" style={{ color: "blue" }}>
-            ⏳ Extracting metadata...
-          </p>
-        )}
-        {previewError && (
-          <p role="alert" style={{ color: "orange" }}>
-            ⚠ {previewError}
-          </p>
-        )}
-        {metadataLoaded && (
-          <p style={{ color: "green" }}>✅ Metadata extracted — review fields below.</p>
-        )}
-        {audioFile && (
-          <p style={{ color: "gray", fontSize: "0.85em" }}>
-            {audioFile.name} — {(audioFile.size / 1024 / 1024).toFixed(2)} MB
-          </p>
-        )}
-      </section>
-
-      <hr />
+        <div className="mt-3 space-y-1">
+          {previewLoading && (
+            <p role="status" className="text-sm text-blue-400">⏳ Extracting metadata...</p>
+          )}
+          {previewError && (
+            <p role="alert" className="text-sm text-amber-400">⚠ {previewError}</p>
+          )}
+          {metadataLoaded && (
+            <p className="text-sm text-green-400">✅ Metadata extracted — review fields below.</p>
+          )}
+          {audioFile && (
+            <p className="text-xs text-muted">
+              {audioFile.name} — {(audioFile.size / 1024 / 1024).toFixed(2)} MB
+            </p>
+          )}
+        </div>
+      </Step>
 
       {/* Step 2 — Track info */}
-      <section>
-        <h3>Step 2 — Track Info</h3>
-        <table cellPadding="8">
-          <tbody>
-            {TEXT_FIELDS.map(({ name, label, required, placeholder }) => (
-              <tr key={name}>
-                <td>
-                  <label htmlFor={name}>
-                    <strong>{label}</strong>
-                  </label>
-                </td>
-                <td>
-                  <input
-                    id={name}
-                    name={name}
-                    type="text"
-                    value={formData[name]}
-                    onChange={handleFieldChange}
-                    placeholder={placeholder}
-                    required={required}
-                    style={{ width: "300px" }}
-                  />
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td>
-                <label htmlFor="license">
-                  <strong>License *</strong>
-                </label>
-              </td>
-              <td>
-                <select
-                  id="license"
-                  name="license"
-                  value={formData.license}
-                  onChange={handleFieldChange}
-                  required
-                >
-                  {LICENSE_OPTIONS.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <br />
-                <small style={{ color: "gray" }}>CC0, CC-BY, CC-BY-SA allow downloads.</small>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+      <Step number={2} title="Track Info">
+        <div className="grid sm:grid-cols-2 gap-4">
+          {TEXT_FIELDS.map(({ name, label, required, placeholder }) => (
+            <div key={name}>
+              <label htmlFor={name} className="block text-sm font-medium mb-1.5">
+                {label} {required && <span className="text-blood">*</span>}
+              </label>
+              <input
+                id={name}
+                name={name}
+                type="text"
+                value={formData[name]}
+                onChange={handleFieldChange}
+                placeholder={placeholder}
+                required={required}
+                className="input"
+              />
+            </div>
+          ))}
+        </div>
 
-      <hr />
+        <div className="mt-4">
+          <label htmlFor="license" className="block text-sm font-medium mb-1.5">
+            License <span className="text-blood">*</span>
+          </label>
+          <select
+            id="license"
+            name="license"
+            value={formData.license}
+            onChange={handleFieldChange}
+            required
+            className="input"
+          >
+            {LICENSE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <p className="text-xs text-muted mt-1.5">CC0, CC-BY, CC-BY-SA allow downloads.</p>
+        </div>
+      </Step>
 
       {/* Step 3 — Cover art */}
-      <section>
-        <h3>Step 3 — Cover Art (Optional)</h3>
+      <Step number={3} title="Cover Art (Optional)">
         <input
           ref={coverInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={handleCoverChange}
           aria-label="Cover art"
+          className={fileInputClass}
         />
         {coverFile && (
-          <p style={{ color: "gray", fontSize: "0.85em" }}>
+          <p className="text-xs text-muted mt-2">
             {coverFile.name} — {(coverFile.size / 1024).toFixed(0)} KB
           </p>
         )}
-      </section>
-
-      <hr />
+      </Step>
 
       {/* Step 4 — Consent */}
-      <section>
-        <h3>Step 4 — Rights Confirmation</h3>
-        <label style={{ display: "flex", gap: "8px", cursor: "pointer" }}>
+      <Step number={4} title="Rights Confirmation">
+        <label className="flex items-start gap-3 cursor-pointer text-sm">
           <input
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-red-600 shrink-0"
           />
-          <span>
+          <span className="text-muted">
             I confirm I own the rights to this content or it is freely licensed.
             I understand uploading copyrighted content without permission may result in removal.
           </span>
         </label>
-      </section>
-
-      <hr />
+      </Step>
 
       {uploadError && (
-        <div
-          role="alert"
-          style={{ color: "red", border: "1px solid red", padding: "8px", marginBottom: "8px" }}
-        >
+        <div role="alert" className="rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
           <strong>Error:</strong> {uploadError}
         </div>
       )}
       {uploadSuccess && (
-        <div
-          role="status"
-          style={{ color: "green", border: "1px solid green", padding: "8px", marginBottom: "8px" }}
-        >
+        <div role="status" className="rounded-md border border-green-600 bg-green-950/30 px-3 py-2 text-sm text-green-300">
           {uploadSuccess}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={uploadLoading || !audioFile}
-        style={{ padding: "10px 24px", fontSize: "1em" }}
-      >
-        {uploadLoading ? "Uploading..." : "Upload Track"}
-      </button>
-      {!audioFile && (
-        <span style={{ marginLeft: "12px", color: "gray", fontSize: "0.9em" }}>
-          Select an audio file first
-        </span>
-      )}
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={uploadLoading || !audioFile} className="btn-primary">
+          {uploadLoading ? "Uploading..." : "Upload Track"}
+        </button>
+        {!audioFile && <span className="text-sm text-muted">Select an audio file first</span>}
+      </div>
     </form>
   );
 }

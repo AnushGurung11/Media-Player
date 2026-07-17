@@ -1,100 +1,98 @@
 import { Link } from "react-router-dom";
 import { useItunesSearch } from "../hooks/useItunesSearch";
 import { usePlayer } from "../hooks/usePlayer";
-import Player from "../components/Player";
 
 function DiscoverPage() {
   const { query, setQuery, results, loading, error } = useItunesSearch();
   const { queue, currentIndex, loadQueueSource, handlePlay } = usePlayer();
 
-  // Swap the active queue to the current search results, then play.
   const playResult = (track) => {
     loadQueueSource(results);
-    // handlePlay looks up the track by _id inside the queue — but the
-    // queue state update from loadQueueSource hasn't landed yet on this
-    // render, so we call handlePlay against `results` directly instead.
     const index = results.findIndex((t) => t._id === track._id);
     if (index !== -1) handlePlay(results[index]);
   };
 
   return (
-    <div style={{ padding: "16px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Discover</h1>
-        <Link to="/"><button>← Back to Library</button></Link>
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl">Discover</h1>
+        <Link to="/"><button className="btn-ghost">← Back to Library</button></Link>
       </div>
 
-      <p style={{ color: "gray" }}>
-        Search iTunes for any song. Playback is a 30-second preview clip only —
-        full tracks aren't available through this API.
-      </p>
+      {/* Prominent search hero */}
+      <div className="card mb-8 py-10 px-8 text-center bg-gradient-to-b from-surface to-surface-2">
+        <h2 className="text-lg mb-1">Find any song</h2>
+        <p className="text-sm text-muted mb-6">
+          Search iTunes's full catalog. Playback is a 30-second preview clip.
+        </p>
 
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for a song, artist, or album..."
-        style={{ width: "100%", padding: "10px", fontSize: "1em", marginBottom: "16px" }}
-      />
+        <div className="relative max-w-xl mx-auto">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-lg">🔍</span>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Song, artist, or album..."
+            className="w-full rounded-full border border-border bg-surface-2 pl-12 pr-4 py-3.5
+                       text-base text-text placeholder:text-muted
+                       focus:outline-none focus:border-blood focus:ring-2 focus:ring-blood/20
+                       transition-colors"
+            autoFocus
+          />
+        </div>
+      </div>
 
-      {loading && <p>Searching...</p>}
+      {loading && <p className="text-sm text-muted text-center">Searching...</p>}
 
       {error && (
-        <div style={{ color: "red", border: "1px solid red", padding: "8px", marginBottom: "12px" }}>
+        <div className="mb-4 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
           <strong>Error:</strong> {error}
         </div>
       )}
 
       {!loading && !error && query.trim() && results.length === 0 && (
-        <p>No results for "{query}".</p>
+        <p className="text-sm text-muted text-center">No results for "{query}".</p>
       )}
 
+      {/* Result grid — Spotify-style cards */}
       {results.length > 0 && (
-        <table border="1" cellPadding="8" cellSpacing="0" style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>Cover</th>
-              <th>Title</th>
-              <th>Artist</th>
-              <th>Album</th>
-              <th>Genre</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((track) => (
-              <tr
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {results.map((track) => {
+            const isPlaying = queue[currentIndex]?._id === track._id;
+            return (
+              <div
                 key={track._id}
-                style={{
-                  backgroundColor:
-                    queue[currentIndex]?._id === track._id ? "#d0e8ff" : "white",
-                }}
+                className={`card group cursor-pointer transition-colors ${
+                  isPlaying ? "border-blood" : "hover:border-border"
+                }`}
+                onClick={() => playResult(track)}
               >
-                <td>
+                <div className="relative w-full aspect-square rounded-md overflow-hidden bg-surface-2 mb-3">
                   {track.coverUrl ? (
-                    <img
-                      src={track.coverUrl}
-                      alt={track.title}
-                      style={{ width: "40px", height: "40px", objectFit: "cover" }}
-                    />
-                  ) : ("—")}
-                </td>
-                <td>{track.title}</td>
-                <td>{track.artist}</td>
-                <td>{track.album || "—"}</td>
-                <td>{track.genre || "—"}</td>
-                <td>
-                  <button onClick={() => playResult(track)}>
-                    {queue[currentIndex]?._id === track._id ? "▶ Playing" : "▶ Preview"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                    <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl text-muted">🎵</div>
+                  )}
 
-      <Player />
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${
+                      isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                  >
+                    <span className="w-11 h-11 rounded-full bg-blood text-white flex items-center justify-center text-lg">
+                      {isPlaying ? "❚❚" : "▶"}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-sm font-medium truncate">{track.title}</p>
+                <p className="text-xs text-muted truncate">{track.artist}</p>
+                {track.album && <p className="text-xs text-muted truncate">{track.album}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
