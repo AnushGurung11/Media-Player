@@ -1,0 +1,119 @@
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(false)
+    }
+
+    environment {
+        DOCKERHUB_USERNAME = credentials('dockerhub-username')
+        DOCKERHUB_TOKEN     = credentials('dockerhub-token')
+        DISCORD_WEBHOOK     = credentials('discord-webhook')
+    }
+
+    stages {
+
+        stage('Build & Test') {
+            parallel {
+
+                stage('Backend - Build & Test') {
+                    agent any
+                    environment {
+                        PORT                       = credentials('port')
+                        MONGO_URI                  = credentials('mongo-uri')
+                        JWT_SECRET                 = credentials('jwt-secret')
+                        JWT_EXPIRES_IN             = credentials('jwt-expires-in')
+                        ADMIN_SECRET               = credentials('admin-secret')
+                        SUPABASE_URL               = credentials('supabase-url')
+                        SUPABASE_PUBLISHABLE_KEY   = credentials('supabase-publishable-key')
+                        SUPABASE_SECRET_KEY        = credentials('supabase-secret-key')
+                        SUPABASE_JWKS_URL          = credentials('supabase-jwks-url')
+                    }
+                    steps {
+                        dir('backend') {
+                            sh 'npm ci'
+                            sh 'npm test --if-present'
+                        }
+                    }
+                    post {
+                        always {
+                            script { notifyDiscord('Backend CI', currentBuild.currentResult) }
+                        }
+                    }
+                }
+
+                stage('Frontend - Build & Lint') {
+                    agent any
+                    environment {
+                        VITE_SUPABASE_URL             = credentials('vite-supabase-url')
+                        VITE_SUPABASE_PUBLISHABLE_KEY = credentials('vite-supabase-publishable-key')
+                    }
+                    steps {
+                        dir('frontend') {
+                            sh 'npm ci'
+                            sh 'npm run lint'
+                            sh 'npm run build'
+                        }
+                    }
+                    post {
+                        always {
+                            script { notifyDiscord('Frontend CI', currentBuild.currentResult) }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Backend Image') {
+            when {
+                branch 'main'
+                expression { env.CHANGE_ID == null } // ensures it's a push, not a PR
+            }
+            steps {
+                dir('backend') {
+                    script {
+                        def shortSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                        sh """
+                            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+                            docker build -t anushgurung11/backend:latest -t anushgurung11/backend:${shortSha} .
+                            docker push anushgurung11/backend:latest
+                            docker push anushgurung11/backend:${shortSha}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Frontend Image') {
+            when {
+                branch 'main'
+                expression { env.CHANGE_ID == null }
+            }
+            steps {
+                dir('frontend') {
+                    script {
+                        def shortSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                        sh """
+                            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+                            docker build -t anushgurung11/frontend:latest -t anushgurung11/frontend:${shortSha} .
+                            docker push anushgurung11/frontend:latest
+                            docker push anushgurung11/frontend:${shortSha}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
+
+def notifyDiscord(String title, String status) {
+    sh """
+        curl -H "Content-Type: application/json" -X POST -d '{
+            "embeds": [{
+                "title": "${title}",
+                "description": "Build finished with status: ${status}",
+                "color": ${status == 'SUCCESS' ? '3066993' : '15158332'}
+            }]
+        }' \$DISCORD_WEBHOOK
+    """
+}
