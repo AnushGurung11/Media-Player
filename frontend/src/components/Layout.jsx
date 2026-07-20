@@ -1,13 +1,31 @@
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Player from "./Player";
 
 function Layout({ children }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
-    <div className="flex bg-ink text-text min-h-screen">
-      <Sidebar />
-      <main className="flex-1 min-w-0 overflow-y-auto pb-28">
-        {children}
-      </main>
+    <div className="bg-ink text-text min-h-screen">
+      {/* Mobile top bar — hidden on desktop, sidebar handles nav there */}
+      <div className="md:hidden sticky top-0 z-40 flex items-center justify-between bg-surface border-b border-border px-4 py-3">
+        <span className="text-lg font-display font-bold tracking-tight">
+          VIBE<span className="text-blood">.</span>
+        </span>
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          className="text-xl text-muted hover:text-text transition-colors"
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
+      </div>
+
+      <div className="flex">
+        <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
+        <main className="flex-1 min-w-0 pb-24 md:pb-28">{children}</main>
+      </div>
+
       <Player />
     </div>
   );
