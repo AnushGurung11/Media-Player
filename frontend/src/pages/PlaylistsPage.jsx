@@ -69,7 +69,7 @@ function PlaylistsPage() {
   }, [selected, loadQueueSource]);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl">Playlists</h1>
@@ -155,7 +155,7 @@ function PlaylistsPage() {
 
         {/* ── Right column: open playlist detail ── */}
         {selected && (
-          <div className="flex-1 min-w-0 card">
+          <div className="flex-1 min-w-0 w-full card">
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg flex items-center gap-2">
                 📋 {selected.name}
@@ -183,14 +183,14 @@ function PlaylistsPage() {
                   {tracks.map((track) => {
                     const alreadyAdded = selected.songs?.some((s) => (s._id || s) === track._id);
                     return (
-                      <div key={track._id} className="flex items-center justify-between py-2">
+                      <div key={track._id} className="flex items-center justify-between py-2 gap-2">
                         <span className="text-sm truncate">
                           <strong>{track.title}</strong> <span className="text-muted">— {track.artist}</span>
                         </span>
                         <button
                           onClick={() => handleAddSong(track._id)}
                           disabled={alreadyAdded}
-                          className={alreadyAdded ? "btn-ghost !px-2.5 !py-1 text-xs" : "btn-outline !px-2.5 !py-1 text-xs"}
+                          className={alreadyAdded ? "btn-ghost !px-2.5 !py-1 text-xs shrink-0" : "btn-outline !px-2.5 !py-1 text-xs shrink-0"}
                         >
                           {alreadyAdded ? "✓ Added" : "+ Add"}
                         </button>
@@ -203,7 +203,7 @@ function PlaylistsPage() {
 
             {/* Playback controls */}
             <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button onClick={() => playList(selected.songs, { shuffled: false })} className="btn-primary">
                   ▶ Play from Start
                 </button>
@@ -212,7 +212,7 @@ function PlaylistsPage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center flex-wrap gap-2">
                 <span className="text-xs text-muted">Mode:</span>
                 {["normal", "shuffle", "random"].map((m) => (
                   <button
@@ -243,9 +243,17 @@ function PlaylistsPage() {
                 <table className="table-vibe">
                   <thead>
                     <tr>
-                      <th>#</th><th>Cover</th><th>Title</th><th>Artist</th>
-                      <th>Album</th><th>Genre</th><th>Duration</th>
-                      <th>Plays</th><th>Likes</th><th>Play</th><th>Remove</th>
+                      <th>#</th>
+                      <th>Cover</th>
+                      <th>Title</th>
+                      <th>Artist</th>
+                      <th className="hidden md:table-cell">Album</th>
+                      <th className="hidden md:table-cell">Genre</th>
+                      <th className="hidden md:table-cell">Duration</th>
+                      <th>Plays</th>
+                      <th>Likes</th>
+                      <th>Play</th>
+                      <th>Remove</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -263,9 +271,9 @@ function PlaylistsPage() {
                           </td>
                           <td className="font-medium">{song.title || "—"}</td>
                           <td className="text-muted">{song.artist || "—"}</td>
-                          <td className="text-muted">{song.album || "—"}</td>
-                          <td className="text-muted">{song.genre || "—"}</td>
-                          <td className="text-muted">
+                          <td className="hidden md:table-cell text-muted">{song.album || "—"}</td>
+                          <td className="hidden md:table-cell text-muted">{song.genre || "—"}</td>
+                          <td className="hidden md:table-cell text-muted">
                             {song.duration
                               ? `${Math.floor(song.duration / 60)}:${String(song.duration % 60).padStart(2, "0")}`
                               : "—"}

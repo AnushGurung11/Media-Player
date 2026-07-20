@@ -54,7 +54,7 @@ function HomePage() {
   }, [loadQueueSource]);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <h1 className="text-2xl mb-1">Home</h1>
       <p className="text-sm text-muted mb-6">Welcome back, {user.username}.</p>
 
@@ -146,9 +146,17 @@ function HomePage() {
             <table className="table-vibe">
               <thead>
                 <tr>
-                  <th>#</th><th>Cover</th><th>Title</th><th>Artist</th>
-                  <th>Album</th><th>Genre</th><th>Duration</th><th>License</th>
-                  <th>Plays</th><th>Likes</th><th>Action</th>
+                  <th>#</th>
+                  <th>Cover</th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th className="hidden md:table-cell">Album</th>
+                  <th className="hidden md:table-cell">Genre</th>
+                  <th className="hidden md:table-cell">Duration</th>
+                  <th className="hidden md:table-cell">License</th>
+                  <th>Plays</th>
+                  <th>Likes</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,14 +172,14 @@ function HomePage() {
                     </td>
                     <td className="font-medium">{track.title}</td>
                     <td className="text-muted">{track.artist}</td>
-                    <td className="text-muted">{track.album || "—"}</td>
-                    <td className="text-muted">{track.genre || "—"}</td>
-                    <td className="text-muted">
+                    <td className="hidden md:table-cell text-muted">{track.album || "—"}</td>
+                    <td className="hidden md:table-cell text-muted">{track.genre || "—"}</td>
+                    <td className="hidden md:table-cell text-muted">
                       {track.duration
                         ? `${Math.floor(track.duration / 60)}:${String(track.duration % 60).padStart(2, "0")}`
                         : "—"}
                     </td>
-                    <td className="text-muted">{track.license}</td>
+                    <td className="hidden md:table-cell text-muted">{track.license}</td>
                     <td className="text-muted">{track.playCount}</td>
                     <td>
                       <button
