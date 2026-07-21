@@ -14,6 +14,31 @@ pipeline {
         stage('Build & Test') {
             parallel {
 
+                stage('Backend - Build & Test') {
+                    agent any
+                    environment {
+                        MONGO_URI                = credentials('mongo-uri')
+                        JWT_SECRET                = credentials('jwt-secret')
+                        JWT_EXPIRES_IN            = credentials('jwt-expires-in')
+                        ADMIN_SECRET              = credentials('admin-secret')
+                        SUPABASE_URL              = credentials('supabase-url')
+                        SUPABASE_PUBLISHABLE_KEY  = credentials('supabase-publishable-key')
+                        SUPABASE_SECRET_KEY       = credentials('supabase-secret-key')
+                        SUPABASE_JWKS_URL         = credentials('supabase-jwks-url')
+                    }
+                    steps {
+                        dir('backend') {
+                            bat 'npm ci'
+                            bat 'npm test'
+                        }
+                    }
+                    post {
+                        always {
+                            script { notifyDiscord('Backend CI', currentBuild.currentResult) }
+                        }
+                    }
+                }
+
                 stage('Frontend - Build & Lint') {
                     agent any
                     environment {
