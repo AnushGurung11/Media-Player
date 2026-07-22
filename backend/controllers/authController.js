@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const jwt  = require("jsonwebtoken");
+const googleClient = require("../config/googleClient");
 
 // Generate JWT — now includes role in payload
 const generateToken = (userId, role) => {
@@ -134,4 +135,67 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, registerAdmin, login };
+// -------------------------------------------------------
+// @route   POST /api/auth/oauth
+// @desc    Log in (or create an account) via Google. Frontend sends
+//          the credential it got from the Google Sign-In button; we
+//          verify it server-side and issue our own JWT, same as normal login.
+// @access  Public
+// -------------------------------------------------------
+const oauthLogin = async (req, res) => {
+    try {
+        const { credential } = req.body;
+        if (!credential) {
+            return res.status(400).json({ message: "credential is required" });
+        }
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        const { sub: googleId, email, name } = payload;
+
+        if (!email) {
+            return res.status(400).json({ message: "Google account has no email" });
+        }
+
+        let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+        if (!user) {
+            const base = (name || email.split("@")[0]).replace(/\s+/g, "").toLowerCase();
+            let username = base;
+            let suffix = 0;
+            while (await User.findOne({ username })) {
+                suffix += 1;
+                username = `${base}${suffix}`;
+            }
+
+            user = await User.create({ username, email, googleId, role: "user" });
+        } else if (!user.googleId) {
+            // Existing email/password account signing in with Google for the
+            // first time — link instead of creating a duplicate.
+            user.googleId = googleId;
+        }
+
+        user.lastLogin = Date.now();
+        await user.save();
+
+        const token = generateToken(user._id, user.role);
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        res.status(401).json({ message: "Invalid or expired Google credential", error: error.message });
+    }
+};
+
+module.exports = { register, registerAdmin, login, oauthLogin };
