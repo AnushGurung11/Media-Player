@@ -1,11 +1,12 @@
-// frontend/src/pages/RegisterPage.jsx
 import { Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { useFormFields } from "../hooks/useFormFields";
-import { useRegister } from "../hooks/useAuthForms";
+import { useRegister, useGoogleAuth } from "../hooks/useAuthForms";
 
 function RegisterPage() {
   const [formData, handleChange] = useFormFields({ username: "", email: "", password: "" });
   const { error, loading, submitRegister } = useRegister();
+  const { error: googleError, submitGoogleLogin } = useGoogleAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -78,6 +79,28 @@ function RegisterPage() {
               {loading ? "Creating account..." : "Register"}
             </button>
           </form>
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted">OR</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          {googleError && (
+            <div className="mb-3 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
+              {googleError}
+            </div>
+          )}
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={submitGoogleLogin}
+              onError={() => console.error("Google sign-in failed")}
+              theme="filled_black"
+              shape="pill"
+              width="300"
+            />
+          </div>
         </div>
 
         <p className="text-center text-sm text-muted mt-4">
