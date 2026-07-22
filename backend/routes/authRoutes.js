@@ -2,17 +2,15 @@
 const express = require("express");
 // Requireed router module from express
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware"); /// Auto auth
 
 console.log("Auth routes loaded");
-// Importing the register and login fucntion form authController.js
-const {register,login} = require("../controllers/authController"); 
-
+// Importing the register, login, and oauth functions from authController.js
+const { register, login, oauthLogin } = require("../controllers/authController");
 
 // Routing the URL
 router.post("/register", register);
-router.post("/login", login); 
+router.post("/login", login);
+router.post("/oauth", oauthLogin);
 
 // Exporting the router at the end as we are adding in the outer module instance
-module.exports = router; 
-
+module.exports = router;

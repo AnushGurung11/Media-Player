@@ -53,3 +53,22 @@ export function useRegister() {
 
   return { error, loading, submitRegister };
 }
+
+export function useGoogleAuth() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [error, setError] = useState("");
+
+  const submitGoogleLogin = async (credentialResponse) => {
+    setError("");
+    try {
+      const res = await api.post("/auth/oauth", { credential: credentialResponse.credential });
+      login(res.data.user, res.data.token);
+      navigate(res.data.user.role === "admin" ? "/admin/dashboard" : "/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Google sign-in failed. Try again.");
+    }
+  };
+
+  return { error, submitGoogleLogin };
+}
