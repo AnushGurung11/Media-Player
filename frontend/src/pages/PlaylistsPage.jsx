@@ -4,6 +4,7 @@ import { usePlaylists } from "../hooks/usePlaylists";
 import { usePlayer } from "../hooks/usePlayer";
 import { useAuth } from "../hooks/useAuth";
 import { useLikeTrack } from "../hooks/useLikeTrack";
+import TrackCard from "../components/TrackCard";
 
 function PlaylistsPage() {
   const {
@@ -174,26 +175,34 @@ function PlaylistsPage() {
               </p>
             )}
 
-            {/* Song picker */}
+            {/* Song picker — grid of all tracks, click a card to add it */}
             {showPicker && (
-              <div className="card bg-surface-2 mb-4 max-h-64 overflow-y-auto">
-                <h4 className="text-sm text-muted uppercase tracking-wide mb-2">All Tracks — click to add</h4>
+              <div className="card bg-surface-2 mb-4 max-h-80 overflow-y-auto">
+                <h4 className="text-sm text-muted uppercase tracking-wide mb-3">All Tracks — click to add</h4>
                 {tracks.length === 0 && <p className="text-sm text-muted">No tracks available.</p>}
-                <div className="divide-y divide-border">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {tracks.map((track) => {
                     const alreadyAdded = selected.songs?.some((s) => (s._id || s) === track._id);
                     return (
-                      <div key={track._id} className="flex items-center justify-between py-2 gap-2">
-                        <span className="text-sm truncate">
-                          <strong>{track.title}</strong> <span className="text-muted">— {track.artist}</span>
-                        </span>
-                        <button
-                          onClick={() => handleAddSong(track._id)}
-                          disabled={alreadyAdded}
-                          className={alreadyAdded ? "btn-ghost !px-2.5 !py-1 text-xs shrink-0" : "btn-outline !px-2.5 !py-1 text-xs shrink-0"}
-                        >
+                      <div
+                        key={track._id}
+                        onClick={() => !alreadyAdded && handleAddSong(track._id)}
+                        role="button"
+                        tabIndex={0}
+                        className={`card !p-2.5 transition-colors ${
+                          alreadyAdded ? "opacity-50 cursor-default" : "cursor-pointer hover:border-blood"
+                        }`}
+                      >
+                        {track.coverUrl ? (
+                          <img src={track.coverUrl} alt={track.title} className="w-full aspect-square object-cover rounded mb-2" />
+                        ) : (
+                          <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-2xl text-muted">♪</div>
+                        )}
+                        <p className="text-xs font-medium truncate">{track.title}</p>
+                        <p className="text-xs text-muted truncate">{track.artist}</p>
+                        <span className={`text-xs mt-1 block ${alreadyAdded ? "text-green-400" : "text-blood"}`}>
                           {alreadyAdded ? "✓ Added" : "+ Add"}
-                        </button>
+                        </span>
                       </div>
                     );
                   })}
@@ -235,79 +244,29 @@ function PlaylistsPage() {
               </button>
             )}
 
-            {/* Songs table */}
+            {/* Songs grid */}
             {selected.songs?.length === 0 ? (
               <p className="text-sm text-muted">No songs yet. Click "+ Add Songs" to add some.</p>
             ) : (
-              <div className="overflow-x-auto -mx-4">
-                <table className="table-vibe">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Cover</th>
-                      <th>Title</th>
-                      <th>Artist</th>
-                      <th className="hidden md:table-cell">Album</th>
-                      <th className="hidden md:table-cell">Genre</th>
-                      <th className="hidden md:table-cell">Duration</th>
-                      <th>Plays</th>
-                      <th>Likes</th>
-                      <th>Play</th>
-                      <th>Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selected.songs.map((song, index) => {
-                      const isPlaying = currentIndex !== null && queue[currentIndex]?._id === song._id;
-                      return (
-                        <tr key={song._id || song} className={isPlaying ? "is-active" : ""}>
-                          <td className="text-muted">{index + 1}</td>
-                          <td>
-                            {song.coverUrl ? (
-                              <img src={song.coverUrl} alt={song.title} className="w-9 h-9 object-cover rounded" />
-                            ) : (
-                              <div className="w-9 h-9 rounded bg-surface-2" />
-                            )}
-                          </td>
-                          <td className="font-medium">{song.title || "—"}</td>
-                          <td className="text-muted">{song.artist || "—"}</td>
-                          <td className="hidden md:table-cell text-muted">{song.album || "—"}</td>
-                          <td className="hidden md:table-cell text-muted">{song.genre || "—"}</td>
-                          <td className="hidden md:table-cell text-muted">
-                            {song.duration
-                              ? `${Math.floor(song.duration / 60)}:${String(song.duration % 60).padStart(2, "0")}`
-                              : "—"}
-                          </td>
-                          <td className="text-muted">{song.playCount ?? "—"}</td>
-                          <td>
-                            <button
-                              onClick={() => handleToggleLike(song)}
-                              disabled={likingId === song._id}
-                              className="btn-ghost !px-2 !py-1"
-                            >
-                              {getLikeState(song).liked ? "❤" : "🤍"} {getLikeState(song).likesCount}
-                            </button>
-                          </td>
-                          <td>
-                            <button
-                              onClick={() => handlePlay(song)}
-                              className={isPlaying ? "btn-primary !px-3 !py-1.5" : "btn-outline !px-3 !py-1.5"}
-                            >
-                              {isPlaying ? "▶ Playing" : "▶ Play"}
-                            </button>
-                          </td>
-                          <td>
-                            {selected.isOwner && (
-                              <button onClick={() => handleRemoveSong(song._id || song)} className="btn-danger !px-2.5 !py-1 text-xs">
-                                Remove
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {selected.songs.map((song) => {
+                  const isPlaying = currentIndex !== null && queue[currentIndex]?._id === song._id;
+                  const { liked, likesCount } = getLikeState(song);
+                  return (
+                    <TrackCard
+                      key={song._id || song}
+                      track={song}
+                      isPlaying={isPlaying}
+                      onPlay={handlePlay}
+                      liked={liked}
+                      likesCount={likesCount}
+                      onToggleLike={handleToggleLike}
+                      likingId={likingId}
+                      showRemove={selected.isOwner}
+                      onRemove={handleRemoveSong}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>

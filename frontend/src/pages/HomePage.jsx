@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { usePlayer } from "../hooks/usePlayer";
 import { useLikeTrack } from "../hooks/useLikeTrack";
 import { usePlaylists } from "../hooks/usePlaylists";
+import TrackCard from "../components/TrackCard";
 
 function HomePage() {
   const { user, isAdmin } = useAuth();
@@ -139,69 +140,28 @@ function HomePage() {
         </p>
       )}
 
+      {loading && <p className="text-sm text-muted">Loading tracks...</p>}
+
       {!loading && queue.length > 0 && (
         <div>
           <h2 className="text-lg mb-3">Tracks ({queue.length})</h2>
-          <div className="card p-0 overflow-x-auto">
-            <table className="table-vibe">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cover</th>
-                  <th>Title</th>
-                  <th>Artist</th>
-                  <th className="hidden md:table-cell">Album</th>
-                  <th className="hidden md:table-cell">Genre</th>
-                  <th className="hidden md:table-cell">Duration</th>
-                  <th className="hidden md:table-cell">License</th>
-                  <th>Plays</th>
-                  <th>Likes</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {queue.map((track, index) => (
-                  <tr key={track._id} className={currentIndex === index ? "is-active" : ""}>
-                    <td className="text-muted">{index + 1}</td>
-                    <td>
-                      {track.coverUrl ? (
-                        <img src={track.coverUrl} alt={track.title} className="w-10 h-10 object-cover rounded" />
-                      ) : (
-                        <div className="w-10 h-10 rounded bg-surface-2" />
-                      )}
-                    </td>
-                    <td className="font-medium">{track.title}</td>
-                    <td className="text-muted">{track.artist}</td>
-                    <td className="hidden md:table-cell text-muted">{track.album || "—"}</td>
-                    <td className="hidden md:table-cell text-muted">{track.genre || "—"}</td>
-                    <td className="hidden md:table-cell text-muted">
-                      {track.duration
-                        ? `${Math.floor(track.duration / 60)}:${String(track.duration % 60).padStart(2, "0")}`
-                        : "—"}
-                    </td>
-                    <td className="hidden md:table-cell text-muted">{track.license}</td>
-                    <td className="text-muted">{track.playCount}</td>
-                    <td>
-                      <button
-                        onClick={() => handleToggleLike(track)}
-                        disabled={likingId === track._id}
-                        className="btn-ghost !px-2 !py-1"
-                      >
-                        {getLikeState(track).liked ? "❤" : "🤍"} {getLikeState(track).likesCount}
-                      </button>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handlePlay(track)}
-                        className={currentIndex === index ? "btn-primary !px-3 !py-1.5" : "btn-outline !px-3 !py-1.5"}
-                      >
-                        {currentIndex === index ? "▶ Playing" : "▶ Play"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {queue.map((track, index) => {
+              const isPlaying = currentIndex === index;
+              const { liked, likesCount } = getLikeState(track);
+              return (
+                <TrackCard
+                  key={track._id}
+                  track={track}
+                  isPlaying={isPlaying}
+                  onPlay={handlePlay}
+                  liked={liked}
+                  likesCount={likesCount}
+                  onToggleLike={handleToggleLike}
+                  likingId={likingId}
+                />
+              );
+            })}
           </div>
         </div>
       )}
