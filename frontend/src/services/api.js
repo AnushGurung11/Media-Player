@@ -3,6 +3,7 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 });
+// const { Client } = require ('@elastic/elasticsearch');
 
 // Attach token to every request automatically
 api.interceptors.request.use((config) => {
@@ -10,6 +11,10 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+// const client = new Client({
+//   auth: { apiKey: 'YOUR_API_KEY' }
+// })
 
 // Handle 401 globally — token expired or invalid
 api.interceptors.response.use(
