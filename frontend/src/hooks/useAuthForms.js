@@ -16,7 +16,7 @@ export function useLogin() {
     try {
       const res = await api.post("/auth/login", formData);
       login(res.data.user, res.data.token);
-      navigate(res.data.user.role === "admin" ? "/admin/overview" : "/");
+      navigate(res.data.user.role === "admin" ? "/admin/dashboard" : "/");
     } catch (err) {
       setError(err.response?.data?.message || err.response?.data?.error || "Login failed. Check your connection and try again.");
     } finally {
