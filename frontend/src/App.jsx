@@ -3,6 +3,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { PlayerProvider } from "./context/PlayerContext";
 import Layout from "./components/Layout";
+import ErrorBoundary from "./components/ErrorBoundary";
+import NotFoundPage from "./pages/errors/NotFoundPage";
+import ForbiddenPage from "./pages/errors/ForbiddenPage";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -24,7 +27,7 @@ function AdminRoute({ children }) {
   const token = localStorage.getItem("token");
 
   if (!token) return <Navigate to="/login" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!isAdmin) return <ForbiddenPage />;
 
   return children;
 }
@@ -63,7 +66,7 @@ function AppRoutes() {
         <AdminRoute><AdminDashboard /></AdminRoute>
       } />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
@@ -71,11 +74,13 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <PlayerProvider>
-          <AppRoutes />
-        </PlayerProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <PlayerProvider>
+            <AppRoutes />
+          </PlayerProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
