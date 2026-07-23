@@ -5,11 +5,12 @@ import { useAuth } from "../hooks/useAuth";
 import { usePlayer } from "../hooks/usePlayer";
 import { useLikeTrack } from "../hooks/useLikeTrack";
 import { usePlaylists } from "../hooks/usePlaylists";
-import TrackCard from "../components/TrackCard";
+import TrackCard from "../components/Trackcard";
 
 function HomePage() {
   const { user, isAdmin } = useAuth();
-  const { queue, mode, setMode, currentIndex, loadQueueSource, handlePlay } = usePlayer();
+  const { queue, mode, setMode, currentIndex, loadQueueSource, handlePlay } =
+    usePlayer();
   const { playlists, loading: playlistsLoading } = usePlaylists();
 
   const [tracks, setTracks] = useState([]);
@@ -62,11 +63,16 @@ function HomePage() {
       {isAdmin && (
         <div className="card mb-6 flex items-center justify-between flex-wrap gap-3">
           <span className="text-sm text-muted">
-            <strong className="text-text">Admin tools</strong> — manage the track library
+            <strong className="text-text">Admin tools</strong> — manage the
+            track library
           </span>
           <div className="flex gap-2">
-            <Link to="/admin/upload"><button className="btn-outline">+ Upload Track</button></Link>
-            <Link to="/admin/tracks"><button className="btn-outline">Manage Tracks</button></Link>
+            <Link to="/admin/upload">
+              <button className="btn-outline">+ Upload Track</button>
+            </Link>
+            <Link to="/admin/tracks">
+              <button className="btn-outline">Manage Tracks</button>
+            </Link>
           </div>
         </div>
       )}
@@ -95,14 +101,22 @@ function HomePage() {
       {/* Playlists — horizontal scroll, Spotify-style cards */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg">Playlists {playlists.length > 0 && `(${playlists.length})`}</h2>
-          <Link to="/playlists"><button className="btn-ghost">Manage →</button></Link>
+          <h2 className="text-lg">
+            Playlists {playlists.length > 0 && `(${playlists.length})`}
+          </h2>
+          <Link to="/playlists">
+            <button className="btn-ghost">Manage →</button>
+          </Link>
         </div>
 
-        {playlistsLoading && <p className="text-sm text-muted">Loading playlists...</p>}
+        {playlistsLoading && (
+          <p className="text-sm text-muted">Loading playlists...</p>
+        )}
 
         {!playlistsLoading && playlists.length === 0 && (
-          <p className="text-sm text-muted">No playlists yet. Create one from the Playlists page.</p>
+          <p className="text-sm text-muted">
+            No playlists yet. Create one from the Playlists page.
+          </p>
         )}
 
         {!playlistsLoading && playlists.length > 0 && (
@@ -115,7 +129,9 @@ function HomePage() {
                   </div>
                   <strong className="text-sm block truncate">{pl.name}</strong>
                   {!pl.isOwner && <div className="badge mt-1">🌐 Public</div>}
-                  <div className="text-xs text-muted mt-1">{pl.songs?.length || 0} songs</div>
+                  <div className="text-xs text-muted mt-1">
+                    {pl.songs?.length || 0} songs
+                  </div>
                 </div>
               </Link>
             ))}
@@ -133,7 +149,9 @@ function HomePage() {
         <p className="text-sm text-muted">
           No tracks available yet.{" "}
           {isAdmin ? (
-            <Link to="/admin/upload" className="text-blood hover:underline">Upload the first one.</Link>
+            <Link to="/admin/upload" className="text-blood hover:underline">
+              Upload the first one.
+            </Link>
           ) : (
             "Ask an admin to upload some music."
           )}
