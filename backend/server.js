@@ -8,6 +8,7 @@ const express = require("express"); /* creating a constant for storing the expre
 const connectDB = require("./config/ConnectDB");
 /* Creating a connection object using ConnectDB */ 
 const { supabase } = require("./config/supabase");// Creating a connection with supabase
+const logger = require("./logger");
 
 const app = express(); 
 connectDB(); 
@@ -40,6 +41,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url}`);
+  next();
+});
 
 // Test connection on server start
 const testSupabase = async () => {
