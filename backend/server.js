@@ -6,6 +6,7 @@ require("dotenv").config();
 const cors = require("cors"); /*this is for resource sharing cross origin resource sharing */
 const express = require("express"); /* creating a constant for storing the express lib from node modules*/
 const connectDB = require("./config/ConnectDB");
+const rateLimit = require('express-rate-limit');
 /* Creating a connection object using ConnectDB */ 
 const { supabase } = require("./config/supabase");// Creating a connection with supabase
 const logger = require("./logger");
@@ -18,6 +19,12 @@ connectDB();
 app.use(cors()); 
 // Specifying the use of JSON in express
 app.use(express.json()); 
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100 // max requests per window
+});
+app.use(limiter);
 
 // the /api/auth is the initial URL and then the rest will be handled by the 
 // require where remaing URL will be matched by the respective Route js file. 
