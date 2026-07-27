@@ -10,7 +10,7 @@ datadogRum.init({
     applicationId: 'ed18ff50-c8dd-4c25-8f86-3ca53f7b7bc7',
     clientToken: 'pub3adcdb1ec9c1ef5f2a9c8782738f5be4',
     site: 'datadoghq.com',
-    service: 'vibe-mediaplayer',
+    service: 'vibe-mediaplayers',
     env: 'production',
     version: '1.0',
     sessionSampleRate: 100,
