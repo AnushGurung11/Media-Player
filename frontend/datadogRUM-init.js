@@ -13,5 +13,5 @@ datadogRum.init({
     trackResources: true,
     trackUserInteractions: true,
     trackLongTasks: true,
-    plugins: [reactPlugin({ router: false })],
+    plugins: [reactPlugin({ router: true })],
 });
