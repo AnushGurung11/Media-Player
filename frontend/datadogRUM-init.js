@@ -6,7 +6,7 @@ datadogRum.init({
     clientToken: 'pub3adcdb1ec9c1ef5f2a9c8782738f5be4',
     site: 'datadoghq.com',
     service: 'vibe mediaplayer',
-    env: 'product',				// e.g. 'prod', 'staging-1', 'dev'
+    env: 'production',				// e.g. 'prod', 'staging-1', 'dev'
     version: '1.0',	// e.g. '1.0.0'
     sessionSampleRate: 100,			// capture 100% of sessions
     sessionReplaySampleRate: 20,	// capture 20% of sessions with replay
