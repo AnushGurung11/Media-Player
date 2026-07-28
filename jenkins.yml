@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         DISCORD_WEBHOOK = credentials('discord-webhook')
+        SONAR_TOKEN     = credentials('sonar-token')
     }
 
     stages {
@@ -57,6 +58,24 @@ pipeline {
                             script { notifyDiscord('Frontend CI', currentBuild.currentResult) }
                         }
                     }
+                }
+            }
+        }
+
+        stage('SonarCloud Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    bat """
+                        "${scannerHome}\\bin\\sonar-scanner.bat" ^
+                        -Dsonar.host.url=https://sonarcloud.io ^
+                        -Dsonar.login=%SONAR_TOKEN%
+                    """
+                }
+            }
+            post {
+                always {
+                    script { notifyDiscord('SonarCloud Analysis', currentBuild.currentResult) }
                 }
             }
         }
