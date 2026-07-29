@@ -2,6 +2,13 @@
  * The server.js is the main entry point of node js server. 
  */
 // so this will store the connection of DB
+
+require('dd-trace').init({
+  service: 'vibe-backend',
+  env: 'production',
+  logInjection: true
+});
+
 require("dotenv").config();
 const cors = require("cors"); /*this is for resource sharing cross origin resource sharing */
 const express = require("express"); /* creating a constant for storing the express lib from node modules*/
