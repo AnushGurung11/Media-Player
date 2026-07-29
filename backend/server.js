@@ -3,6 +3,8 @@
  */
 // so this will store the connection of DB
 
+process.env.DD_TRACE_AGENTLESS = 'true';
+
 require('dd-trace').init({
   service: 'vibe-backend',
   env: 'production',
