@@ -26,7 +26,7 @@ function UserUpload() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-1">
-        <h1 className="text-3xl">Upload a Track</h1>
+        <h1 className="text-2xl">Upload a Track</h1>
         <Link to="/"><button className="btn-ghost">← Back to Player</button></Link>
       </div>
 

@@ -21,7 +21,7 @@ function AdminLayout({ children }) {
   const navLink = (item, extra = "") =>
     `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${extra} ${
       isActive(item.to)
-        ? "bg-brand/10 text-brand"
+        ? "bg-surface-2 text-text font-semibold"
         : "text-muted hover:text-text hover:bg-surface-2"
     }`;
 

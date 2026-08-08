@@ -44,8 +44,8 @@ function TrackCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onPlay(track);
       }}
-      className={`card !p-3 cursor-pointer group transition-colors hover:border-brand ${
-        isPlaying ? "border-brand bg-brand/10" : ""
+      className={`card !p-3 cursor-pointer group transition-colors hover:border-text ${
+        isPlaying ? "border-text bg-surface-2" : ""
       }`}
     >
       <div className="relative mb-3">
@@ -63,7 +63,7 @@ function TrackCard({
 
         {/* Play/pause overlay — always visible while playing, fades in on hover otherwise */}
         <div
-          className={`absolute bottom-2 right-2 rounded-full bg-gradient-to-br from-brand-a to-brand-b text-white p-2.5 shadow-lg transition-all ${
+          className={`absolute bottom-2 right-2 rounded-full bg-btn-primary-bg text-btn-primary-fg p-2.5 shadow-lg transition-all ${
             isPlaying
               ? "opacity-100"
               : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
@@ -79,7 +79,7 @@ function TrackCard({
               onRemove(track._id || track);
             }}
             aria-label="Remove from playlist"
-            className="absolute top-2 right-2 rounded-full bg-black/60 text-danger hover:text-brand w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 rounded-full bg-black/60 text-danger hover:text-blood w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
           >
             ✕
           </button>

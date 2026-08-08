@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ThemeToggle from "./ThemeToggle";
@@ -12,7 +11,7 @@ const NAV_ITEMS = [
   { to: "/upload", label: "Upload", icon: "＋" },
 ];
 
-function Sidebar({ mobileOpen, onMobileClose }) {
+function Sidebar() {
   const { user, isAdmin, handleLogout } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -20,102 +19,82 @@ function Sidebar({ mobileOpen, onMobileClose }) {
 
   const linkClass = (path) =>
     `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-      collapsed ? "md:justify-center" : ""
+      collapsed ? "justify-center" : ""
     } ${
       location.pathname === path
-        ? "bg-brand/10 text-brand"
+        ? "bg-surface-2 text-text font-semibold"
         : "text-muted hover:text-text hover:bg-surface-2"
     }`;
 
   const confirmLogout = () => {
     setShowLogoutConfirm(false);
-    onMobileClose();
     handleLogout();
   };
 
   return (
-    <>
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/60 z-40"
-          onClick={onMobileClose}
-        />
-      )}
+    <aside
+      className={`hidden md:flex bg-surface border-r border-border flex-col transition-all
+                  duration-200 sticky top-0 h-screen
+                  ${collapsed ? "w-16" : "w-60"}`}
+    >
+      <div className="px-5 py-5 flex items-center justify-between">
+        {!collapsed && <Brand className="text-xl" />}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-muted hover:text-text transition-colors text-lg"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? "»" : "«"}
+        </button>
+      </div>
 
-      <aside
-        className={`bg-surface border-r border-border flex flex-col transition-transform
-                    duration-200 z-50 fixed md:sticky top-0 left-0 h-screen
-                    w-64 ${collapsed ? "md:w-16" : "md:w-60"}
-                    ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-      >
-        <div className="px-5 py-5 flex items-center justify-between">
-          <Brand className="text-xl" />
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden md:block text-muted hover:text-text transition-colors text-lg"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={linkClass(item.to)}
+            title={collapsed ? item.label : undefined}
           >
-            {collapsed ? "»" : "«"}
-          </button>
-          <button
-            onClick={onMobileClose}
-            className="md:hidden text-muted hover:text-text transition-colors text-xl"
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        </div>
+            <span>{item.icon}</span>
+            {!collapsed && <span>{item.label}</span>}
+          </Link>
+        ))}
 
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onMobileClose}
-              className={linkClass(item.to)}
-              title={collapsed ? item.label : undefined}
-            >
-              <span>{item.icon}</span>
-              <span className={collapsed ? "md:hidden" : ""}>{item.label}</span>
+        {isAdmin && (
+          <>
+            <div className={`pt-4 pb-1 px-3 text-xs uppercase tracking-wide text-muted ${collapsed ? "sr-only" : ""}`}>
+              Admin
+            </div>
+            <Link to="/admin/dashboard" className={linkClass("/admin/dashboard")} title={collapsed ? "Dashboard" : undefined}>
+              <span>⚙</span>
+              {!collapsed && <span>Dashboard</span>}
             </Link>
-          ))}
+            <Link to="/admin/tracks" className={linkClass("/admin/tracks")} title={collapsed ? "Manage Tracks" : undefined}>
+              <span>🎵</span>
+              {!collapsed && <span>Manage Tracks</span>}
+            </Link>
+          </>
+        )}
+      </nav>
 
-          {isAdmin && (
-            <>
-              <div className={`pt-4 pb-1 px-3 text-xs uppercase tracking-wide text-muted ${collapsed ? "md:hidden" : ""}`}>
-                Admin
-              </div>
-              <Link to="/admin/dashboard" onClick={onMobileClose} className={linkClass("/admin/dashboard")} title={collapsed ? "Dashboard" : undefined}>
-                <span>⚙</span>
-                <span className={collapsed ? "md:hidden" : ""}>Dashboard</span>
-              </Link>
-              <Link to="/admin/tracks" onClick={onMobileClose} className={linkClass("/admin/tracks")} title={collapsed ? "Manage Tracks" : undefined}>
-                <span>🎵</span>
-                <span className={collapsed ? "md:hidden" : ""}>Manage Tracks</span>
-              </Link>
-            </>
-          )}
-        </nav>
-
-        <div className="px-3 py-4 border-t border-border">
-          <div className={`px-3 mb-2 text-sm ${collapsed ? "md:hidden" : ""}`}>
-            <div className="font-medium truncate">{user.username}</div>
-            {isAdmin && <span className="badge">{user.role}</span>}
-          </div>
-          <div className="flex items-center gap-2 px-1">
-            <ThemeToggle />
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              className={`btn-ghost flex-1 ${collapsed ? "md:!px-0" : ""}`}
-              title={collapsed ? "Logout" : undefined}
-            >
-              <span className={collapsed ? "md:hidden" : ""}>Logout</span>
-              <span className={collapsed ? "hidden md:inline" : "hidden"}>⎋</span>
-            </button>
-          </div>
+      <div className="px-3 py-4 border-t border-border">
+        <div className={`px-3 mb-2 text-sm ${collapsed ? "sr-only" : ""}`}>
+          <div className="font-medium truncate">{user.username}</div>
+          {isAdmin && <span className="badge">{user.role}</span>}
         </div>
-      </aside>
+        <div className="flex items-center gap-2 px-1">
+          <ThemeToggle />
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className={`btn-ghost flex-1 ${collapsed ? "!px-0" : ""}`}
+            title={collapsed ? "Logout" : undefined}
+          >
+            {!collapsed && <span>Logout</span>}
+            {collapsed && <span>⎋</span>}
+          </button>
+        </div>
+      </div>
 
       {showLogoutConfirm && (
         <div
@@ -132,13 +111,8 @@ function Sidebar({ mobileOpen, onMobileClose }) {
           </div>
         </div>
       )}
-    </>
+    </aside>
   );
 }
-
-Sidebar.propTypes = {
-  mobileOpen: PropTypes.bool.isRequired,
-  onMobileClose: PropTypes.func.isRequired,
-};
 
 export default Sidebar;

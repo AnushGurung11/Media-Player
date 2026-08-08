@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { usePlaylists } from "../hooks/usePlaylists";
 import { usePlayer } from "../hooks/usePlayer";
 import { useAuth } from "../hooks/useAuth";
@@ -16,7 +15,6 @@ function PlaylistsPage() {
     showPicker,
     setShowPicker,
     pickerMsg,
-    setPickerMsg,
     handleCreate,
     handleOpen,
     handleClose,
@@ -28,8 +26,6 @@ function PlaylistsPage() {
   const {
     queue,
     currentIndex,
-    mode,
-    setMode,
     handlePlay,
     playList,
     loadQueueSource,
@@ -38,7 +34,6 @@ function PlaylistsPage() {
   const { toggleLike, likingId } = useLikeTrack();
   const [likeOverrides, setLikeOverrides] = useState({});
 
-  // Create-playlist form is hidden behind a button now — starts closed
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");
@@ -77,14 +72,176 @@ function PlaylistsPage() {
     }
   }, [selected, loadQueueSource]);
 
+  /* ── Detail view ── */
+  if (selected) {
+    const songCount = selected.songs?.length || 0;
+    return (
+      <div className="max-w-6xl mx-auto">
+        <button onClick={handleClose} className="btn-ghost !px-3 !py-1.5 mb-6">
+          ← All playlists
+        </button>
+
+        {/* Playlist header */}
+        <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-4xl shrink-0">
+              📋
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl">{selected.name}</h1>
+              <p className="text-sm text-muted mt-1">
+                {songCount} {songCount === 1 ? "song" : "songs"}
+                {!selected.isOwner && " · Public"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => playList(selected.songs, { shuffled: false })}
+              disabled={songCount === 0}
+              className="btn-primary"
+            >
+              ▶ Play
+            </button>
+            <button
+              onClick={() => playList(selected.songs, { shuffled: true })}
+              disabled={songCount === 0}
+              className="btn-outline"
+            >
+              🔀 Shuffle
+            </button>
+            {selected.isOwner && (
+              <button onClick={() => handleDelete(selected)} className="btn-danger">
+                Delete
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Song picker */}
+        {showPicker && (
+          <div className="card bg-surface-2 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base">Add songs</h3>
+              <button onClick={() => setShowPicker(false)} className="btn-ghost !px-3 !py-1.5">
+                ✕ Close
+              </button>
+            </div>
+            {tracks.length === 0 && (
+              <p className="text-sm text-muted">No tracks available.</p>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-80 overflow-y-auto pr-1">
+              {tracks.map((track) => {
+                const alreadyAdded = selected.songs?.some(
+                  (s) => (s._id || s) === track._id,
+                );
+                return (
+                  <div
+                    key={track._id}
+                    onClick={() => !alreadyAdded && handleAddSong(track._id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if ((e.key === "Enter" || e.key === " ") && !alreadyAdded) {
+                        handleAddSong(track._id);
+                      }
+                    }}
+                    className={`card !p-2.5 transition-colors ${
+                      alreadyAdded
+                        ? "opacity-50 cursor-default"
+                        : "cursor-pointer hover:border-text"
+                    }`}
+                  >
+                    {track.coverUrl ? (
+                      <img
+                        src={track.coverUrl}
+                        alt={track.title}
+                        className="w-full aspect-square object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-2xl text-muted">
+                        ♪
+                      </div>
+                    )}
+                    <p className="text-xs font-medium truncate">{track.title}</p>
+                    <p className="text-xs text-muted truncate">{track.artist}</p>
+                    <span
+                      className={`text-xs mt-1 block ${
+                        alreadyAdded ? "text-success" : "text-muted"
+                      }`}
+                    >
+                      {alreadyAdded ? "✓ Added" : "+ Add"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Songs */}
+        {songCount === 0 ? (
+          <div className="card text-center py-10">
+            <p className="text-sm text-muted mb-3">No songs in this playlist yet.</p>
+            {selected.isOwner ? (
+              <button onClick={() => setShowPicker(true)} className="btn-outline">
+                + Add Songs
+              </button>
+            ) : (
+              <p className="text-sm text-muted">Sit tight — nothing to play yet.</p>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {selected.songs.map((song) => {
+              const isPlaying =
+                currentIndex !== null && queue[currentIndex]?._id === song._id;
+              const { liked, likesCount } = getLikeState(song);
+              return (
+                <TrackCard
+                  key={song._id || song}
+                  track={song}
+                  isPlaying={isPlaying}
+                  onPlay={handlePlay}
+                  liked={liked}
+                  likesCount={likesCount}
+                  onToggleLike={handleToggleLike}
+                  likingId={likingId}
+                  showRemove={selected.isOwner}
+                  onRemove={handleRemoveSong}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {pickerMsg && (
+          <p
+            className={`text-sm mt-4 ${
+              pickerMsg.startsWith("✅") ? "text-success" : "text-danger"
+            }`}
+          >
+            {pickerMsg}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  /* ── Library view ── */
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl">Playlists</h1>
-        <Link to="/">
-          <button className="btn-ghost">← Back to Player</button>
-        </Link>
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl">Playlists</h1>
+          <p className="text-sm text-muted mt-1">
+            {loading ? "Loading…" : `${playlists.length} playlists in your library`}
+          </p>
+        </div>
+        <button onClick={() => setShowCreateForm((v) => !v)} className="btn-primary">
+          + New Playlist
+        </button>
       </div>
 
       {error && (
@@ -93,282 +250,81 @@ function PlaylistsPage() {
         </div>
       )}
 
-      <div className="flex gap-10 items-start flex-col lg:flex-row">
-        {/* ── Left column: playlist list + create ── */}
-        <div className="w-full lg:w-72 shrink-0 space-y-4">
-          {/* Create playlist — button reveals a card form */}
-          {!showCreateForm ? (
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="btn-primary w-full"
-            >
-              + New Playlist
+      {createSuccess && <p className="text-sm text-success mb-4">{createSuccess}</p>}
+
+      {showCreateForm && (
+        <form onSubmit={onCreateSubmit} className="card mb-6 space-y-3 max-w-md">
+          <label htmlFor="playlist-name" className="block text-sm font-medium">
+            Playlist name
+          </label>
+          <input
+            id="playlist-name"
+            type="text"
+            placeholder="e.g. Road trip bangers"
+            value={newName}
+            autoFocus
+            onChange={(e) => {
+              setNewName(e.target.value);
+              setCreateError("");
+            }}
+            className="input"
+          />
+          {createError && <p className="text-sm text-danger">{createError}</p>}
+          <div className="flex gap-2">
+            <button type="submit" className="btn-primary flex-1">
+              Create
             </button>
-          ) : (
-            <div className="card">
-              <form onSubmit={onCreateSubmit} className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="Playlist name"
-                  value={newName}
-                  autoFocus
-                  onChange={(e) => {
-                    setNewName(e.target.value);
-                    setCreateError("");
-                  }}
-                  className="input"
-                />
-                <div className="flex gap-2">
-                  <button type="submit" className="btn-primary flex-1">
-                    Create
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateForm(false)}
-                    className="btn-ghost"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-              {createError && (
-                <p className="text-sm text-danger mt-2">{createError}</p>
-              )}
-            </div>
-          )}
-          {createSuccess && (
-            <p className="text-sm text-success">{createSuccess}</p>
-          )}
-
-          {/* Playlist list */}
-          <div>
-            <h3 className="text-sm text-muted uppercase tracking-wide mb-2">
-              Your Library ({playlists.length})
-            </h3>
-
-            {loading && <p className="text-sm text-muted">Loading...</p>}
-
-            {!loading && playlists.length === 0 && (
-              <p className="text-sm text-muted">
-                No playlists yet. Create one above!
-              </p>
-            )}
-
-            <div className="space-y-2">
-              {playlists.map((pl) => (
-                <div
-                  key={pl._id}
-                  className={`card transition-colors ${
-                    selected?._id === pl._id
-                      ? "border-brand bg-brand/10"
-                      : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <strong className="text-sm block truncate">
-                        {pl.name}
-                      </strong>
-                      {!pl.isOwner && (
-                        <span className="badge mt-1">🌐 Admin · Public</span>
-                      )}
-                      <p className="text-xs text-muted mt-0.5">
-                        {pl.songs?.length || 0} songs
-                      </p>
-                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <button
-                        onClick={() => handleOpen(pl)}
-                        className="btn-outline !px-2.5 !py-1 text-xs"
-                      >
-                        Open
-                      </button>
-                      {pl.isOwner && (
-                        <button
-                          onClick={() => handleDelete(pl)}
-                          className="btn-danger !px-2.5 !py-1 text-xs"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowCreateForm(false)}
+              className="btn-ghost"
+            >
+              Cancel
+            </button>
           </div>
+        </form>
+      )}
+
+      {loading && <p className="text-sm text-muted">Loading playlists...</p>}
+
+      {!loading && !error && playlists.length === 0 && (
+        <div className="card text-center py-14">
+          <div className="text-4xl mb-3">📋</div>
+          <p className="text-sm text-muted mb-4">
+            No playlists yet. Create your first one!
+          </p>
+          <button onClick={() => setShowCreateForm(true)} className="btn-primary">
+            + New Playlist
+          </button>
         </div>
+      )}
 
-        {/* ── Right column: open playlist detail ── */}
-        {selected && (
-          <div className="flex-1 min-w-0 w-full card">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg flex items-center gap-2">
-                📋 {selected.name}
-                {!selected.isOwner && (
-                  <span className="badge">🌐 Public (Admin)</span>
-                )}
-              </h2>
-              <button onClick={handleClose} className="btn-ghost !px-2 !py-1">
-                ✕
-              </button>
-            </div>
-
-            <p className="text-sm text-muted mb-4">
-              {selected.songs?.length || 0} songs in this playlist
-            </p>
-
-            {pickerMsg && (
-              <p
-                className={`text-sm mb-3 ${pickerMsg.startsWith("✅") ? "text-success" : "text-danger"}`}
-              >
-                {pickerMsg}
-              </p>
-            )}
-
-            {/* Song picker — grid of all tracks, click a card to add it */}
-            {showPicker && (
-              <div className="card bg-surface-2 mb-4 max-h-80 overflow-y-auto">
-                <h4 className="text-sm text-muted uppercase tracking-wide mb-3">
-                  All Tracks — click to add
-                </h4>
-                {tracks.length === 0 && (
-                  <p className="text-sm text-muted">No tracks available.</p>
-                )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {tracks.map((track) => {
-                    const alreadyAdded = selected.songs?.some(
-                      (s) => (s._id || s) === track._id,
-                    );
-                    return (
-                      <div
-                        key={track._id}
-                        onClick={() =>
-                          !alreadyAdded && handleAddSong(track._id)
-                        }
-                        role="button"
-                        tabIndex={0}
-                        className={`card !p-2.5 transition-colors ${
-                          alreadyAdded
-                            ? "opacity-50 cursor-default"
-                            : "cursor-pointer hover:border-brand"
-                        }`}
-                      >
-                        {track.coverUrl ? (
-                          <img
-                            src={track.coverUrl}
-                            alt={track.title}
-                            className="w-full aspect-square object-cover rounded mb-2"
-                          />
-                        ) : (
-                          <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-2xl text-muted">
-                            ♪
-                          </div>
-                        )}
-                        <p className="text-xs font-medium truncate">
-                          {track.title}
-                        </p>
-                        <p className="text-xs text-muted truncate">
-                          {track.artist}
-                        </p>
-                        <span
-                          className={`text-xs mt-1 block ${alreadyAdded ? "text-success" : "text-brand"}`}
-                        >
-                          {alreadyAdded ? "✓ Added" : "+ Add"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+      {!loading && playlists.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {playlists.map((pl) => (
+            <div
+              key={pl._id}
+              onClick={() => handleOpen(pl)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleOpen(pl);
+              }}
+              className="card !p-0 overflow-hidden cursor-pointer transition-colors hover:border-text group"
+            >
+              <div className="aspect-square bg-surface-2 flex items-center justify-center text-4xl">
+                📋
               </div>
-            )}
-
-            {/* Playback controls */}
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => playList(selected.songs, { shuffled: false })}
-                  className="btn-primary"
-                >
-                  ▶ Play from Start
-                </button>
-                <button
-                  onClick={() => playList(selected.songs, { shuffled: true })}
-                  className="btn-outline"
-                >
-                  🔀 Randomize & Play
-                </button>
-              </div>
-
-              <div className="flex items-center flex-wrap gap-2">
-                <span className="text-xs text-muted">Mode:</span>
-                {["normal", "shuffle", "random"].map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    className={
-                      mode === m
-                        ? "btn-primary !px-2.5 !py-1 text-xs"
-                        : "btn-outline !px-2.5 !py-1 text-xs"
-                    }
-                  >
-                    {m.charAt(0).toUpperCase() + m.slice(1)}
-                  </button>
-                ))}
+              <div className="p-3">
+                <p className="text-sm font-medium truncate">{pl.name}</p>
+                <p className="text-xs text-muted mt-0.5">
+                  {pl.songs?.length || 0} songs{!pl.isOwner && " · Public"}
+                </p>
               </div>
             </div>
-
-            {selected.isOwner && (
-              <button
-                onClick={() => {
-                  setShowPicker(!showPicker);
-                  setPickerMsg("");
-                }}
-                className="btn-outline mb-4"
-              >
-                {showPicker ? "✕ Close Song Picker" : "+ Add Songs"}
-              </button>
-            )}
-
-            {/* Songs grid */}
-            {selected.songs?.length === 0 ? (
-              <p className="text-sm text-muted">
-                No songs yet. Click "+ Add Songs" to add some.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-                {selected.songs.map((song) => {
-                  const isPlaying =
-                    currentIndex !== null &&
-                    queue[currentIndex]?._id === song._id;
-                  const { liked, likesCount } = getLikeState(song);
-                  return (
-                    <TrackCard
-                      key={song._id || song}
-                      track={song}
-                      isPlaying={isPlaying}
-                      onPlay={handlePlay}
-                      liked={liked}
-                      likesCount={likesCount}
-                      onToggleLike={handleToggleLike}
-                      likingId={likingId}
-                      showRemove={selected.isOwner}
-                      onRemove={handleRemoveSong}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Prompt when no playlist is open */}
-        {!selected && playlists.length > 0 && (
-          <div className="flex-1 flex items-center justify-center text-muted text-sm py-20">
-            ← Select a playlist to view its songs.
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

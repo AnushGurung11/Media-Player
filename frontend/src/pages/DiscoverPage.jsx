@@ -15,12 +15,12 @@ function DiscoverPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl">Discover</h1>
+        <h1 className="text-2xl">Discover</h1>
         <Link to="/"><button className="btn-ghost">← Back to Library</button></Link>
       </div>
 
       {/* Prominent search hero */}
-      <div className="card mb-8 py-10 px-8 text-center bg-gradient-to-b from-surface to-surface-2">
+      <div className="card mb-8 py-10 px-8 text-center">
         <h2 className="text-lg mb-1">Find any song</h2>
         <p className="text-sm text-muted mb-6">
           Search iTunes's full catalog. Playback is a 30-second preview clip.
@@ -35,7 +35,7 @@ function DiscoverPage() {
             placeholder="Song, artist, or album..."
             className="w-full rounded-full border border-border bg-surface-2 pl-12 pr-4 py-3.5
                        text-base text-text placeholder:text-muted
-                       focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20
+                       focus:outline-none focus:border-text focus:ring-2 focus:ring-text/15
                        transition-colors"
             autoFocus
           />
@@ -63,7 +63,7 @@ function DiscoverPage() {
               <div
                 key={track._id}
                 className={`card group cursor-pointer transition-colors ${
-                  isPlaying ? "border-brand" : "hover:border-border"
+                  isPlaying ? "border-text" : "hover:border-border"
                 }`}
                 onClick={() => playResult(track)}
               >
@@ -79,7 +79,7 @@ function DiscoverPage() {
                       isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                     }`}
                   >
-                    <span className="w-11 h-11 rounded-full bg-gradient-to-br from-brand-a to-brand-b text-white flex items-center justify-center text-lg">
+                    <span className="w-11 h-11 rounded-full bg-btn-primary-bg text-btn-primary-fg flex items-center justify-center text-lg">
                       {isPlaying ? "❚❚" : "▶"}
                     </span>
                   </div>
