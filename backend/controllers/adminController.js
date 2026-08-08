@@ -171,20 +171,26 @@ const getSongAnalytics = async (req, res) => {
 
 // -------------------------------------------------------
 // @route   GET /api/admin/playlists
-// @desc    Get all playlists with owner + song count
+// @desc    Get all playlists with owner + song list
 // @access  Admin only
 // -------------------------------------------------------
 const getAllPlaylists = async (req, res) => {
     try {
         const playlists = await Playlist.find()
             .populate("user", "username email")
-            .populate("songs", "title artist");
+            .populate("songs", "title artist duration");
 
         const formatted = playlists.map((p) => ({
             id: p._id,
             name: p.name,
             owner: p.user?.username || "Unknown",
             songCount: p.songs.length,
+            songs: p.songs.map((s) => ({
+                id: s._id,
+                title: s.title,
+                artist: s.artist,
+                duration: s.duration
+            })),
             shuffle: p.shuffle,
             createdAt: p.createdAt
         }));
