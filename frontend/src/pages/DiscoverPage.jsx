@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useItunesSearch } from "../hooks/useItunesSearch";
 import { usePlayer } from "../hooks/usePlayer";
+import { ArrowLeft, Search, Music, Play, Pause } from "lucide-react";
 
 function DiscoverPage() {
   const { query, setQuery, results, loading, error } = useItunesSearch();
@@ -16,7 +17,12 @@ function DiscoverPage() {
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl">Discover</h1>
-        <Link to="/"><button className="btn-ghost">← Back to Library</button></Link>
+        <Link to="/">
+          <button className="btn-ghost flex items-center gap-1.5">
+            <ArrowLeft size={16} />
+            Back to Library
+          </button>
+        </Link>
       </div>
 
       {/* Prominent search hero */}
@@ -27,7 +33,10 @@ function DiscoverPage() {
         </p>
 
         <div className="relative max-w-xl mx-auto">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-lg">🔍</span>
+          <Search
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+          />
           <input
             type="text"
             value={query}
@@ -71,7 +80,9 @@ function DiscoverPage() {
                   {track.coverUrl ? (
                     <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl text-muted">🎵</div>
+                    <div className="w-full h-full flex items-center justify-center text-muted">
+                      <Music size={36} strokeWidth={1.5} />
+                    </div>
                   )}
 
                   <div
@@ -79,8 +90,12 @@ function DiscoverPage() {
                       isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                     }`}
                   >
-                    <span className="w-11 h-11 rounded-full bg-btn-primary-bg text-btn-primary-fg flex items-center justify-center text-lg">
-                      {isPlaying ? "❚❚" : "▶"}
+                    <span className="w-11 h-11 rounded-full bg-btn-primary-bg text-btn-primary-fg flex items-center justify-center">
+                      {isPlaying ? (
+                        <Pause size={18} fill="currentColor" />
+                      ) : (
+                        <Play size={18} fill="currentColor" className="ml-0.5" />
+                      )}
                     </span>
                   </div>
                 </div>

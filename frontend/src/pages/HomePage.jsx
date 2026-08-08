@@ -6,6 +6,7 @@ import { usePlayer } from "../hooks/usePlayer";
 import { useLikeTrack } from "../hooks/useLikeTrack";
 import { usePlaylists } from "../hooks/usePlaylists";
 import TrackCard from "../components/Trackcard";
+import { ListMusic } from "lucide-react";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -116,8 +117,8 @@ function HomePage() {
             {playlists.map((pl) => (
               <Link key={pl._id} to="/playlists" className="group">
                 <div className="card !p-0 overflow-hidden transition-colors group-hover:border-text">
-                  <div className="aspect-square bg-surface-2 flex items-center justify-center text-4xl">
-                    📋
+                  <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
+                    <ListMusic size={40} strokeWidth={1.5} />
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-medium truncate">{pl.name}</p>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AdminLayout from "./AdminLayout";
 import { useAdminTracks } from "../../hooks/useAdminTracks";
+import { Music } from "lucide-react";
 
 function AdminTracks() {
   const { tracks, loading, error, deletingId, handleDelete } = useAdminTracks();
@@ -83,7 +84,7 @@ function AdminTracks() {
                           />
                         ) : (
                           <div className="w-10 h-10 rounded bg-surface-2 flex items-center justify-center text-muted">
-                            ♪
+                            <Music size={18} strokeWidth={1.5} />
                           </div>
                         )}
                       </td>

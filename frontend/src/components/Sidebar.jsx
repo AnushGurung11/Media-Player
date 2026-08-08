@@ -3,12 +3,28 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ThemeToggle from "./ThemeToggle";
 import Brand from "./Brand";
+import {
+  House,
+  Search,
+  ListMusic,
+  Upload,
+  LayoutDashboard,
+  Music,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Home", icon: "🏠" },
-  { to: "/discover", label: "Discover", icon: "🔍" },
-  { to: "/playlists", label: "Playlists", icon: "📋" },
-  { to: "/upload", label: "Upload", icon: "＋" },
+  { to: "/", label: "Home", Icon: House },
+  { to: "/discover", label: "Discover", Icon: Search },
+  { to: "/playlists", label: "Playlists", Icon: ListMusic },
+  { to: "/upload", label: "Upload", Icon: Upload },
+];
+
+const ADMIN_ITEMS = [
+  { to: "/admin/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { to: "/admin/tracks", label: "Manage Tracks", Icon: Music },
 ];
 
 function Sidebar() {
@@ -41,23 +57,23 @@ function Sidebar() {
         {!collapsed && <Brand className="text-xl" />}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-muted hover:text-text transition-colors text-lg"
+          className="text-muted hover:text-text transition-colors"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? "»" : "«"}
+          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
         </button>
       </div>
 
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map(({ to, label, Icon }) => (
           <Link
-            key={item.to}
-            to={item.to}
-            className={linkClass(item.to)}
-            title={collapsed ? item.label : undefined}
+            key={to}
+            to={to}
+            className={linkClass(to)}
+            title={collapsed ? label : undefined}
           >
-            <span>{item.icon}</span>
-            {!collapsed && <span>{item.label}</span>}
+            <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+            {!collapsed && <span>{label}</span>}
           </Link>
         ))}
 
@@ -66,14 +82,17 @@ function Sidebar() {
             <div className={`pt-4 pb-1 px-3 text-xs uppercase tracking-wide text-muted ${collapsed ? "sr-only" : ""}`}>
               Admin
             </div>
-            <Link to="/admin/dashboard" className={linkClass("/admin/dashboard")} title={collapsed ? "Dashboard" : undefined}>
-              <span>⚙</span>
-              {!collapsed && <span>Dashboard</span>}
-            </Link>
-            <Link to="/admin/tracks" className={linkClass("/admin/tracks")} title={collapsed ? "Manage Tracks" : undefined}>
-              <span>🎵</span>
-              {!collapsed && <span>Manage Tracks</span>}
-            </Link>
+            {ADMIN_ITEMS.map(({ to, label, Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className={linkClass(to)}
+                title={collapsed ? label : undefined}
+              >
+                <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+                {!collapsed && <span>{label}</span>}
+              </Link>
+            ))}
           </>
         )}
       </nav>
@@ -91,7 +110,7 @@ function Sidebar() {
             title={collapsed ? "Logout" : undefined}
           >
             {!collapsed && <span>Logout</span>}
-            {collapsed && <span>⎋</span>}
+            {collapsed && <LogOut size={16} />}
           </button>
         </div>
       </div>

@@ -1,16 +1,5 @@
 import { formatTime } from "../utils/format";
-
-const PlayIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" {...props}>
-    <path d="M7 4l14 8-14 8z" />
-  </svg>
-);
-
-const PauseIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" {...props}>
-    <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
-  </svg>
-);
+import { Play, Pause, Music, X, Heart } from "lucide-react";
 
 /**
  * Spotify-style card for a single track. Clicking anywhere on the card plays
@@ -56,8 +45,8 @@ function TrackCard({
             className="w-full aspect-square object-cover rounded"
           />
         ) : (
-          <div className="w-full aspect-square rounded bg-surface-2 flex items-center justify-center text-3xl text-muted">
-            ♪
+          <div className="w-full aspect-square rounded bg-surface-2 flex items-center justify-center text-muted">
+            <Music size={32} strokeWidth={1.5} />
           </div>
         )}
 
@@ -69,7 +58,7 @@ function TrackCard({
               : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
           }`}
         >
-          {isPlaying ? <PauseIcon /> : <PlayIcon />}
+          {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
         </div>
 
         {showRemove && (
@@ -79,9 +68,9 @@ function TrackCard({
               onRemove(track._id || track);
             }}
             aria-label="Remove from playlist"
-            className="absolute top-2 right-2 rounded-full bg-black/60 text-danger hover:text-blood w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 rounded-full bg-black/60 text-danger hover:text-blood w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            ✕
+            <X size={14} />
           </button>
         )}
       </div>
@@ -98,7 +87,8 @@ function TrackCard({
           disabled={likingId === track._id}
           className="btn-ghost !p-1 !px-1.5 text-xs shrink-0"
         >
-          {liked ? "❤" : "🤍"} {likesCount}
+          {liked ? <Heart size={14} className="fill-current" /> : <Heart size={14} />}{" "}
+          {likesCount}
         </button>
         <span className="text-xs text-muted truncate">
           {track.duration ? formatTime(track.duration) : ""}

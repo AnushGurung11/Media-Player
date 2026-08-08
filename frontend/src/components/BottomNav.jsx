@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
+import { House, Search, ListMusic, Upload } from "lucide-react";
 
 const ITEMS = [
-  { to: "/", label: "Home", icon: "🏠" },
-  { to: "/discover", label: "Discover", icon: "🔍" },
-  { to: "/playlists", label: "Playlists", icon: "📋" },
-  { to: "/upload", label: "Upload", icon: "＋" },
+  { to: "/", label: "Home", Icon: House },
+  { to: "/discover", label: "Discover", Icon: Search },
+  { to: "/playlists", label: "Playlists", Icon: ListMusic },
+  { to: "/upload", label: "Upload", Icon: Upload },
 ];
 
 function BottomNav() {
@@ -14,21 +15,25 @@ function BottomNav() {
       aria-label="Primary"
     >
       <div className="flex justify-around items-stretch max-w-lg mx-auto">
-        {ITEMS.map((item) => (
+        {ITEMS.map(({ to, label, Icon }) => (
           <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
+            key={to}
+            to={to}
+            end={to === "/"}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-colors ${
+              `flex flex-col items-center justify-center gap-1 flex-1 py-2.5 transition-colors ${
                 isActive
                   ? "text-text font-semibold"
                   : "text-muted hover:text-text"
               }`
             }
           >
-            <span className="text-[22px] leading-none">{item.icon}</span>
-            <span className="text-[10px] leading-none">{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
+                <span className="text-[10px] leading-none">{label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </div>

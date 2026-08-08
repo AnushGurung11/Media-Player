@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/ThemeToggle";
 import Brand from "../../components/Brand";
+import { LayoutDashboard, Upload, Music, House, LogOut } from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-  { to: "/admin/upload", label: "Upload Track", icon: "＋" },
-  { to: "/admin/tracks", label: "Manage Tracks", icon: "🎵" },
+  { to: "/admin/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { to: "/admin/upload", label: "Upload Track", Icon: Upload },
+  { to: "/admin/tracks", label: "Manage Tracks", Icon: Music },
 ];
 
 function AdminLayout({ children }) {
@@ -38,17 +39,17 @@ function AdminLayout({ children }) {
           <div className="pt-2 pb-1 px-3 text-xs uppercase tracking-wide text-muted">
             Management
           </div>
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.to} to={item.to} className={navLink(item)}>
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+          {NAV_ITEMS.map(({ to, label, Icon }) => (
+            <Link key={to} to={to} className={navLink({ to })}>
+              <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+              <span>{label}</span>
             </Link>
           ))}
           <div className="pt-4 pb-1 px-3 text-xs uppercase tracking-wide text-muted">
             Site
           </div>
           <Link to="/" className={navLink({ to: "/" })}>
-            <span>🏠</span>
+            <House size={18} strokeWidth={1.75} className="shrink-0" />
             <span>Back to Player</span>
           </Link>
         </nav>
@@ -75,21 +76,21 @@ function AdminLayout({ children }) {
           <ThemeToggle />
         </div>
         <nav className="flex gap-1 px-3 pb-2 overflow-x-auto">
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.to} to={item.to} className={navLink(item)}>
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+          {NAV_ITEMS.map(({ to, label, Icon }) => (
+            <Link key={to} to={to} className={navLink({ to })}>
+              <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+              <span>{label}</span>
             </Link>
           ))}
           <Link to="/" className={navLink({ to: "/" })}>
-            <span>🏠</span>
+            <House size={18} strokeWidth={1.75} className="shrink-0" />
             <span>Player</span>
           </Link>
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted hover:text-text whitespace-nowrap"
           >
-            <span>⎋</span>
+            <LogOut size={18} strokeWidth={1.75} />
             <span>Logout</span>
           </button>
         </nav>

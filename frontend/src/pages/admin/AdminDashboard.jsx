@@ -8,11 +8,12 @@ import { useAdminAnalytics } from "../../hooks/useAdminAnalytics";
 import { useAdminUsers } from "../../hooks/useAdminUsers";
 import { useAdminPlaylists } from "../../hooks/useAdminPlaylists";
 import { useAdminTracks } from "../../hooks/useAdminTracks";
+import { Users, Music, ListMusic, Zap, Play, Heart } from "lucide-react";
 
 const TABS = [
-  { key: "users", label: "Users", icon: "👥", Component: UsersPanel },
-  { key: "songs", label: "Songs", icon: "🎵", Component: SongsPanel },
-  { key: "playlists", label: "Playlists", icon: "📋", Component: PlaylistsPanel },
+  { key: "users", label: "Users", Icon: Users, Component: UsersPanel },
+  { key: "songs", label: "Songs", Icon: Music, Component: SongsPanel },
+  { key: "playlists", label: "Playlists", Icon: ListMusic, Component: PlaylistsPanel },
 ];
 
 function AdminDashboard() {
@@ -64,37 +65,37 @@ function AdminDashboard() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatCard
-            icon="👥"
+            icon={<Users size={22} strokeWidth={1.75} />}
             label="Total Users"
             value={usersLoading ? "…" : users.length}
             sub={`${activeCount} active now`}
           />
           <StatCard
-            icon="⚡"
+            icon={<Zap size={22} strokeWidth={1.75} />}
             label="Active Now"
             value={usersLoading ? "…" : activeCount}
             sub="online users"
           />
           <StatCard
-            icon="🎵"
+            icon={<Music size={22} strokeWidth={1.75} />}
             label="Tracks"
             value={tracksLoading ? "…" : tracks.length}
             sub="in library"
           />
           <StatCard
-            icon="📋"
+            icon={<ListMusic size={22} strokeWidth={1.75} />}
             label="Playlists"
             value={playlistsLoading ? "…" : playlists.length}
             sub="total created"
           />
           <StatCard
-            icon="▶"
+            icon={<Play size={22} strokeWidth={1.75} />}
             label="Plays"
             value={analyticsLoading ? "…" : totalPlays}
             sub="top-10 tracks"
           />
           <StatCard
-            icon="❤"
+            icon={<Heart size={22} strokeWidth={1.75} />}
             label="Likes"
             value={analyticsLoading ? "…" : totalLikes}
             sub="top-10 tracks"
@@ -110,14 +111,14 @@ function AdminDashboard() {
 
         {/* Tab bar */}
         <div className="flex gap-2 flex-wrap">
-          {TABS.map(({ key, label, icon }) => (
+          {TABS.map(({ key, label, Icon }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               className={tab === key ? "btn-primary" : "btn-outline"}
               aria-pressed={tab === key}
             >
-              <span>{icon}</span>
+              <Icon size={16} strokeWidth={1.75} />
               {label}
             </button>
           ))}

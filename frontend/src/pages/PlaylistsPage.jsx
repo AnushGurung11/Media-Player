@@ -4,6 +4,14 @@ import { usePlayer } from "../hooks/usePlayer";
 import { useAuth } from "../hooks/useAuth";
 import { useLikeTrack } from "../hooks/useLikeTrack";
 import TrackCard from "../components/Trackcard";
+import {
+  ArrowLeft,
+  ListMusic,
+  Play,
+  Shuffle,
+  X,
+  Music,
+} from "lucide-react";
 
 function PlaylistsPage() {
   const {
@@ -77,15 +85,19 @@ function PlaylistsPage() {
     const songCount = selected.songs?.length || 0;
     return (
       <div className="max-w-6xl mx-auto">
-        <button onClick={handleClose} className="btn-ghost !px-3 !py-1.5 mb-6">
-          ← All playlists
+        <button
+          onClick={handleClose}
+          className="btn-ghost flex items-center gap-1.5 !px-3 !py-1.5 mb-6"
+        >
+          <ArrowLeft size={16} />
+          All playlists
         </button>
 
         {/* Playlist header */}
         <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-4xl shrink-0">
-              📋
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-muted shrink-0">
+              <ListMusic size={36} strokeWidth={1.5} />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl">{selected.name}</h1>
@@ -102,14 +114,16 @@ function PlaylistsPage() {
               disabled={songCount === 0}
               className="btn-primary"
             >
-              ▶ Play
+              <Play size={16} fill="currentColor" />
+              Play
             </button>
             <button
               onClick={() => playList(selected.songs, { shuffled: true })}
               disabled={songCount === 0}
               className="btn-outline"
             >
-              🔀 Shuffle
+              <Shuffle size={16} />
+              Shuffle
             </button>
             {selected.isOwner && (
               <button onClick={() => handleDelete(selected)} className="btn-danger">
@@ -124,8 +138,12 @@ function PlaylistsPage() {
           <div className="card bg-surface-2 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base">Add songs</h3>
-              <button onClick={() => setShowPicker(false)} className="btn-ghost !px-3 !py-1.5">
-                ✕ Close
+              <button
+                onClick={() => setShowPicker(false)}
+                className="btn-ghost !px-3 !py-1.5"
+                aria-label="Close song picker"
+              >
+                <X size={16} />
               </button>
             </div>
             {tracks.length === 0 && (
@@ -160,8 +178,8 @@ function PlaylistsPage() {
                         className="w-full aspect-square object-cover rounded mb-2"
                       />
                     ) : (
-                      <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-2xl text-muted">
-                        ♪
+                      <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-muted">
+                        <Music size={28} strokeWidth={1.5} />
                       </div>
                     )}
                     <p className="text-xs font-medium truncate">{track.title}</p>
@@ -289,7 +307,9 @@ function PlaylistsPage() {
 
       {!loading && !error && playlists.length === 0 && (
         <div className="card text-center py-14">
-          <div className="text-4xl mb-3">📋</div>
+          <div className="flex items-center justify-center mb-3 text-muted">
+            <ListMusic size={40} strokeWidth={1.5} />
+          </div>
           <p className="text-sm text-muted mb-4">
             No playlists yet. Create your first one!
           </p>
@@ -312,8 +332,8 @@ function PlaylistsPage() {
               }}
               className="card !p-0 overflow-hidden cursor-pointer transition-colors hover:border-text group"
             >
-              <div className="aspect-square bg-surface-2 flex items-center justify-center text-4xl">
-                📋
+              <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
+                <ListMusic size={40} strokeWidth={1.5} />
               </div>
               <div className="p-3">
                 <p className="text-sm font-medium truncate">{pl.name}</p>

@@ -1,7 +1,7 @@
-// frontend/src/pages/UserUpload.jsx
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import TrackUploadForm from "../components/TrackUploadForm";
+import { ArrowLeft } from "lucide-react";
 
 const REDIRECT_DELAY_MS = 2000;
 
@@ -27,7 +27,12 @@ function UserUpload() {
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-1">
         <h1 className="text-2xl">Upload a Track</h1>
-        <Link to="/"><button className="btn-ghost">← Back to Player</button></Link>
+        <Link to="/">
+          <button className="btn-ghost flex items-center gap-1.5">
+            <ArrowLeft size={16} />
+            Back to Player
+          </button>
+        </Link>
       </div>
 
       <p className="text-sm text-muted mb-4">
