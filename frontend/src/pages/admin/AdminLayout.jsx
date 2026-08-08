@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import ThemeToggle from "../../components/ThemeToggle";
+import Brand from "../../components/Brand";
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
@@ -20,7 +21,7 @@ function AdminLayout({ children }) {
   const navLink = (item, extra = "") =>
     `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${extra} ${
       isActive(item.to)
-        ? "bg-blood-dim/30 text-danger"
+        ? "bg-brand/10 text-brand"
         : "text-muted hover:text-text hover:bg-surface-2"
     }`;
 
@@ -29,12 +30,7 @@ function AdminLayout({ children }) {
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex md:w-64 shrink-0 flex-col bg-surface border-r border-border sticky top-0 h-screen">
         <div className="px-5 py-5 flex items-center justify-between">
-          <span className="text-xl font-display font-bold tracking-tight">
-            VIBE<span className="text-blood">.</span>
-            <span className="ml-2 text-xs font-medium text-muted align-middle">
-              Admin
-            </span>
-          </span>
+          <Brand className="text-xl" />
           <ThemeToggle />
         </div>
 
@@ -70,9 +66,9 @@ function AdminLayout({ children }) {
       {/* ── Mobile top bar ── */}
       <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="text-lg font-display font-bold tracking-tight">
-            VIBE<span className="text-blood">.</span>
-            <span className="ml-2 text-xs font-medium text-muted align-middle">
+          <span className="flex items-center gap-2">
+            <Brand className="text-lg" />
+            <span className="text-xs font-medium text-muted align-middle">
               Admin
             </span>
           </span>

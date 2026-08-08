@@ -201,14 +201,14 @@ function Player() {
         value={Math.min(progress, duration || 0)}
         onChange={(e) => handleSeek(Number(e.target.value))}
         disabled={!streamUrl}
-        className="w-full h-1 accent-blood cursor-pointer block disabled:cursor-not-allowed"
+        className="w-full h-1 accent-brand cursor-pointer block disabled:cursor-not-allowed"
         aria-label="Seek"
       />
 
       <div className="px-2 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-4">
         {/* Track info */}
         <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:w-64 md:flex-none">
-          <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-blood animate-pulse shrink-0" />
+          <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-brand animate-pulse shrink-0" />
           {currentTrack.coverUrl ? (
             <img
               src={currentTrack.coverUrl}
@@ -284,7 +284,7 @@ function Player() {
             step={0.01}
             value={volume}
             onChange={(e) => handleVolume(Number(e.target.value))}
-            className="w-full h-1 accent-blood cursor-pointer"
+            className="w-full h-1 accent-brand cursor-pointer"
             aria-label="Volume"
           />
         </div>

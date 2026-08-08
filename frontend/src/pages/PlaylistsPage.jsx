@@ -78,10 +78,10 @@ function PlaylistsPage() {
   }, [selected, loadQueueSource]);
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl">Playlists</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl">Playlists</h1>
         <Link to="/">
           <button className="btn-ghost">← Back to Player</button>
         </Link>
@@ -93,7 +93,7 @@ function PlaylistsPage() {
         </div>
       )}
 
-      <div className="flex gap-8 items-start flex-col lg:flex-row">
+      <div className="flex gap-10 items-start flex-col lg:flex-row">
         {/* ── Left column: playlist list + create ── */}
         <div className="w-full lg:w-72 shrink-0 space-y-4">
           {/* Create playlist — button reveals a card form */}
@@ -160,7 +160,7 @@ function PlaylistsPage() {
                   key={pl._id}
                   className={`card transition-colors ${
                     selected?._id === pl._id
-                      ? "border-blood bg-blood-dim/10"
+                      ? "border-brand bg-brand/10"
                       : ""
                   }`}
                 >
@@ -235,7 +235,7 @@ function PlaylistsPage() {
                 {tracks.length === 0 && (
                   <p className="text-sm text-muted">No tracks available.</p>
                 )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {tracks.map((track) => {
                     const alreadyAdded = selected.songs?.some(
                       (s) => (s._id || s) === track._id,
@@ -251,7 +251,7 @@ function PlaylistsPage() {
                         className={`card !p-2.5 transition-colors ${
                           alreadyAdded
                             ? "opacity-50 cursor-default"
-                            : "cursor-pointer hover:border-blood"
+                            : "cursor-pointer hover:border-brand"
                         }`}
                       >
                         {track.coverUrl ? (
@@ -272,7 +272,7 @@ function PlaylistsPage() {
                           {track.artist}
                         </p>
                         <span
-                          className={`text-xs mt-1 block ${alreadyAdded ? "text-success" : "text-blood"}`}
+                          className={`text-xs mt-1 block ${alreadyAdded ? "text-success" : "text-brand"}`}
                         >
                           {alreadyAdded ? "✓ Added" : "+ Add"}
                         </span>
@@ -336,7 +336,7 @@ function PlaylistsPage() {
                 No songs yet. Click "+ Add Songs" to add some.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
                 {selected.songs.map((song) => {
                   const isPlaying =
                     currentIndex !== null &&

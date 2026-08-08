@@ -1,8 +1,8 @@
-// frontend/src/pages/LoginPage.jsx
 import { Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useFormFields } from "../hooks/useFormFields";
 import { useLogin, useGoogleAuth } from "../hooks/useAuthForms";
+import Brand from "../components/Brand";
 
 function LoginPage() {
   const [formData, handleChange] = useFormFields({ email: "", password: "" });
@@ -17,11 +17,9 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-ink flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <span className="text-2xl font-display font-bold tracking-tight text-text">
-            VIBE<span className="text-blood">.</span>
-          </span>
-          <p className="text-sm text-muted mt-1">Log in to keep listening.</p>
+        <div className="text-center mb-8">
+          <Brand className="text-3xl" />
+          <p className="text-sm text-muted mt-2">Log in to keep listening.</p>
         </div>
 
         <div className="card">
@@ -90,7 +88,7 @@ function LoginPage() {
 
         <p className="text-center text-sm text-muted mt-4">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blood hover:underline">Register here</Link>
+          <Link to="/register" className="text-brand hover:underline">Register here</Link>
         </p>
       </div>
     </div>

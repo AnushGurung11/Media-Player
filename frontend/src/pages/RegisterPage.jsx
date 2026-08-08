@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useFormFields } from "../hooks/useFormFields";
 import { useRegister, useGoogleAuth } from "../hooks/useAuthForms";
+import Brand from "../components/Brand";
 
 function RegisterPage() {
   const [formData, handleChange] = useFormFields({ username: "", email: "", password: "" });
@@ -16,11 +17,9 @@ function RegisterPage() {
   return (
     <div className="min-h-screen bg-ink flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <span className="text-2xl font-display font-bold tracking-tight text-text">
-            VIBE<span className="text-blood">.</span>
-          </span>
-          <p className="text-sm text-muted mt-1">Create an account to get started.</p>
+        <div className="text-center mb-8">
+          <Brand className="text-3xl" />
+          <p className="text-sm text-muted mt-2">Create an account to get started.</p>
         </div>
 
         <div className="card">
@@ -105,7 +104,7 @@ function RegisterPage() {
 
         <p className="text-center text-sm text-muted mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-blood hover:underline">Log in here</Link>
+          <Link to="/login" className="text-brand hover:underline">Log in here</Link>
         </p>
       </div>
     </div>

@@ -19,15 +19,15 @@ const TEXT_FIELDS = [
 ];
 
 const fileInputClass =
-  "text-sm text-muted cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md " +
-  "file:border-0 file:bg-blood file:text-white file:text-sm file:font-medium " +
-  "hover:file:bg-blood-hover file:cursor-pointer";
+  "text-sm text-muted cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full " +
+  "file:border-0 file:bg-gradient-to-r file:from-brand-a file:to-brand-b file:text-white " +
+  "file:text-sm file:font-medium hover:file:brightness-110 file:cursor-pointer file:transition-all";
 
 function Step({ number, title, children }) {
   return (
     <div className="card">
       <div className="flex items-center gap-3 mb-4">
-        <span className="w-6 h-6 rounded-full bg-blood-dim/40 text-danger text-xs font-bold flex items-center justify-center shrink-0">
+        <span className="w-6 h-6 rounded-full bg-brand/10 text-brand text-xs font-bold flex items-center justify-center shrink-0">
           {number}
         </span>
         <h3 className="text-base">{title}</h3>
@@ -95,7 +95,7 @@ function TrackUploadForm({ onSuccess }) {
           {TEXT_FIELDS.map(({ name, label, required, placeholder }) => (
             <div key={name}>
               <label htmlFor={name} className="block text-sm font-medium mb-1.5">
-                {label} {required && <span className="text-blood">*</span>}
+                {label} {required && <span className="text-brand">*</span>}
               </label>
               <input
                 id={name}
@@ -113,7 +113,7 @@ function TrackUploadForm({ onSuccess }) {
 
         <div className="mt-4">
           <label htmlFor="license" className="block text-sm font-medium mb-1.5">
-            License <span className="text-blood">*</span>
+            License <span className="text-brand">*</span>
           </label>
           <select
             id="license"

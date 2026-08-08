@@ -2,6 +2,7 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Player from "./Player";
 import ThemeToggle from "./ThemeToggle";
+import Brand from "./Brand";
 
 function Layout({ children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -10,9 +11,7 @@ function Layout({ children }) {
     <div className="bg-ink text-text min-h-screen">
       {/* Mobile top bar — hidden on desktop, sidebar handles nav there */}
       <div className="md:hidden sticky top-0 z-40 flex items-center justify-between bg-surface border-b border-border px-4 py-3">
-        <span className="text-lg font-display font-bold tracking-tight">
-          VIBE<span className="text-blood">.</span>
-        </span>
+        <Brand className="text-lg" />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
@@ -27,7 +26,7 @@ function Layout({ children }) {
 
       <div className="flex">
         <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
-        <main className="flex-1 min-w-0 pb-24 md:pb-28">{children}</main>
+        <main className="flex-1 min-w-0 p-5 md:p-10 pb-28">{children}</main>
       </div>
 
       <Player />

@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ThemeToggle from "./ThemeToggle";
+import Brand from "./Brand";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: "🏠" },
@@ -22,7 +23,7 @@ function Sidebar({ mobileOpen, onMobileClose }) {
       collapsed ? "md:justify-center" : ""
     } ${
       location.pathname === path
-        ? "bg-blood-dim/30 text-danger"
+        ? "bg-brand/10 text-brand"
         : "text-muted hover:text-text hover:bg-surface-2"
     }`;
 
@@ -49,11 +50,7 @@ function Sidebar({ mobileOpen, onMobileClose }) {
                     ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="px-5 py-5 flex items-center justify-between">
-          {!collapsed && (
-            <span className="text-xl font-display font-bold tracking-tight">
-              VIBE<span className="text-blood">.</span>
-            </span>
-          )}
+          <Brand className="text-xl" />
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="hidden md:block text-muted hover:text-text transition-colors text-lg"

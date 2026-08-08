@@ -13,9 +13,9 @@ function DiscoverPage() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl">Discover</h1>
+    <div className="max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl">Discover</h1>
         <Link to="/"><button className="btn-ghost">← Back to Library</button></Link>
       </div>
 
@@ -35,7 +35,7 @@ function DiscoverPage() {
             placeholder="Song, artist, or album..."
             className="w-full rounded-full border border-border bg-surface-2 pl-12 pr-4 py-3.5
                        text-base text-text placeholder:text-muted
-                       focus:outline-none focus:border-blood focus:ring-2 focus:ring-blood/20
+                       focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20
                        transition-colors"
             autoFocus
           />
@@ -56,14 +56,14 @@ function DiscoverPage() {
 
       {/* Result grid — Spotify-style cards */}
       {results.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
           {results.map((track) => {
             const isPlaying = queue[currentIndex]?._id === track._id;
             return (
               <div
                 key={track._id}
                 className={`card group cursor-pointer transition-colors ${
-                  isPlaying ? "border-blood" : "hover:border-border"
+                  isPlaying ? "border-brand" : "hover:border-border"
                 }`}
                 onClick={() => playResult(track)}
               >
@@ -79,7 +79,7 @@ function DiscoverPage() {
                       isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                     }`}
                   >
-                    <span className="w-11 h-11 rounded-full bg-blood text-white flex items-center justify-center text-lg">
+                    <span className="w-11 h-11 rounded-full bg-gradient-to-br from-brand-a to-brand-b text-white flex items-center justify-center text-lg">
                       {isPlaying ? "❚❚" : "▶"}
                     </span>
                   </div>

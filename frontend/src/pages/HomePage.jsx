@@ -56,9 +56,9 @@ function HomePage() {
   }, [loadQueueSource]);
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl mb-1">Home</h1>
-      <p className="text-sm text-muted mb-6">Welcome back, {user.username}.</p>
+    <div className="max-w-6xl mx-auto">
+      <h1 className="text-3xl mb-1">Home</h1>
+      <p className="text-sm text-muted mb-10">Welcome back, {user.username}.</p>
 
       {isAdmin && (
         <div className="card mb-6 flex items-center justify-between flex-wrap gap-3">
@@ -78,7 +78,7 @@ function HomePage() {
       )}
 
       {/* Mode toggle */}
-      <div className="mb-6 flex items-center flex-wrap gap-3">
+      <div className="mb-10 flex items-center flex-wrap gap-3">
         <strong className="text-sm">Playback:</strong>
         <div className="flex gap-2">
           {["normal", "shuffle", "random"].map((m) => (
@@ -99,7 +99,7 @@ function HomePage() {
       </div>
 
       {/* Playlists — horizontal scroll, Spotify-style cards */}
-      <div className="mb-8">
+      <div className="mb-10">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg">
             Playlists {playlists.length > 0 && `(${playlists.length})`}
@@ -120,10 +120,10 @@ function HomePage() {
         )}
 
         {!playlistsLoading && playlists.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="flex gap-4 overflow-x-auto pb-2">
             {playlists.map((pl) => (
               <Link key={pl._id} to="/playlists" className="shrink-0">
-                <div className="card w-40 hover:border-blood transition-colors">
+                <div className="card w-40 hover:border-brand transition-colors">
                   <div className="w-full aspect-square rounded bg-surface-2 mb-2 flex items-center justify-center text-2xl">
                     📋
                   </div>
@@ -149,7 +149,7 @@ function HomePage() {
         <p className="text-sm text-muted">
           No tracks available yet.{" "}
           {isAdmin ? (
-            <Link to="/admin/upload" className="text-blood hover:underline">
+            <Link to="/admin/upload" className="text-brand hover:underline">
               Upload the first one.
             </Link>
           ) : (
@@ -163,7 +163,7 @@ function HomePage() {
       {!loading && queue.length > 0 && (
         <div>
           <h2 className="text-lg mb-3">Tracks ({queue.length})</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
             {queue.map((track, index) => {
               const isPlaying = currentIndex === index;
               const { liked, likesCount } = getLikeState(track);
