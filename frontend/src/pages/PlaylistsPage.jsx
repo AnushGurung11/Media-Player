@@ -88,7 +88,7 @@ function PlaylistsPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
+        <div className="mb-4 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-danger">
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -132,12 +132,12 @@ function PlaylistsPage() {
                 </div>
               </form>
               {createError && (
-                <p className="text-sm text-red-400 mt-2">{createError}</p>
+                <p className="text-sm text-danger mt-2">{createError}</p>
               )}
             </div>
           )}
           {createSuccess && (
-            <p className="text-sm text-green-400">{createSuccess}</p>
+            <p className="text-sm text-success">{createSuccess}</p>
           )}
 
           {/* Playlist list */}
@@ -220,7 +220,7 @@ function PlaylistsPage() {
 
             {pickerMsg && (
               <p
-                className={`text-sm mb-3 ${pickerMsg.startsWith("✅") ? "text-green-400" : "text-red-400"}`}
+                className={`text-sm mb-3 ${pickerMsg.startsWith("✅") ? "text-success" : "text-danger"}`}
               >
                 {pickerMsg}
               </p>
@@ -272,7 +272,7 @@ function PlaylistsPage() {
                           {track.artist}
                         </p>
                         <span
-                          className={`text-xs mt-1 block ${alreadyAdded ? "text-green-400" : "text-blood"}`}
+                          className={`text-xs mt-1 block ${alreadyAdded ? "text-success" : "text-blood"}`}
                         >
                           {alreadyAdded ? "✓ Added" : "+ Add"}
                         </span>

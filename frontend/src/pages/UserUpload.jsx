@@ -34,7 +34,7 @@ function UserUpload() {
         Share your original or freely licensed music with the community.
       </p>
 
-      <div role="note" className="rounded-md border border-amber-600 bg-amber-950/20 px-3 py-2 mb-6 text-sm text-amber-300">
+      <div role="note" className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 mb-6 text-sm text-warning">
         <strong>⚠ Important:</strong> Only upload content you own or have rights to share.
       </div>
 

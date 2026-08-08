@@ -79,7 +79,7 @@ function TrackCard({
               onRemove(track._id || track);
             }}
             aria-label="Remove from playlist"
-            className="absolute top-2 right-2 rounded-full bg-black/60 text-red-400 hover:text-red-300 w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 rounded-full bg-black/60 text-danger hover:text-blood w-7 h-7 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
           >
             ✕
           </button>

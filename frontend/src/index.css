@@ -1,18 +1,56 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0a0a0a;
-  --color-surface: #141414;
-  --color-surface-2: #1c1c1c;
-  --color-border: #262626;
-  --color-text: #f2f2f2;
-  --color-muted: #8f8f8f;
-  --color-blood: #dc2626;
-  --color-blood-hover: #ef4444;
-  --color-blood-dim: #7f1d1d;
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-blood: var(--blood);
+  --color-blood-hover: var(--blood-hover);
+  --color-blood-dim: var(--blood-dim);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
 
   --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  --ink: #0a0a0a;
+  --surface: #141414;
+  --surface-2: #1c1c1c;
+  --border: #262626;
+  --text: #f2f2f2;
+  --muted: #8f8f8f;
+  --blood: #dc2626;
+  --blood-hover: #ef4444;
+  --blood-dim: #7f1d1d;
+  --danger: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+}
+
+html.light {
+  color-scheme: light;
+  --ink: #f6f6f7;
+  --surface: #ffffff;
+  --surface-2: #f2f2f3;
+  --border: #e2e2e6;
+  --text: #18181b;
+  --muted: #71717a;
+  --blood: #dc2626;
+  --blood-hover: #b91c1c;
+  --blood-dim: #fecaca;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #b45309;
+  --info: #2563eb;
 }
 
 body {
@@ -47,7 +85,7 @@ h1, h2, h3 {
     @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2
            text-sm font-medium transition-colors whitespace-nowrap
            disabled:opacity-40 disabled:cursor-not-allowed
-           text-red-400 hover:bg-blood-dim/40 hover:text-red-300;
+           text-danger hover:bg-blood-dim/40 hover:text-danger;
   }
 
   /* Surfaces */
@@ -61,8 +99,8 @@ h1, h2, h3 {
   }
 
   .badge {
-    @apply inline-flex items-center rounded-full border border-blood-dim
-           bg-blood-dim/30 px-2 py-0.5 text-xs text-red-300;
+    @apply inline-flex items-center rounded-full border border-blood-dim/60
+           bg-blood-dim/30 px-2 py-0.5 text-xs text-danger;
   }
 
   /* Tables */
@@ -71,7 +109,7 @@ h1, h2, h3 {
   }
   .table-vibe th {
     @apply border-b border-border px-3 py-2 text-left text-xs uppercase
-           tracking-wide text-muted font-medium;
+           tracking-wide text-muted font-medium whitespace-nowrap;
   }
   .table-vibe td {
     @apply border-b border-border/60 px-3 py-2 align-middle;

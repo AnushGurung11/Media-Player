@@ -1,78 +1,84 @@
 import { useState } from "react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useAdminAnalytics } from "../../hooks/useAdminAnalytics";
+import { useChartColors } from "../../utils/chartColors";
 
 const VIEWS = [
   { key: "mostPlayed", label: "Most Played" },
-  { key: "uploads",    label: "Uploads Over Time" },
-  { key: "mostLiked",  label: "Most Liked" },
+  { key: "uploads", label: "Uploads Over Time" },
+  { key: "mostLiked", label: "Most Liked" },
 ];
 
-function SongsPanel() {
+function SongsPanel({ songAnalytics, loading, error }) {
+  const colors = useChartColors();
   const [view, setView] = useState("mostPlayed");
-  const { songAnalytics, loading, error } = useAdminAnalytics();
+
+  const chartTooltipStyle = {
+    backgroundColor: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "8px",
+    color: "var(--text)",
+  };
 
   return (
-    <div>
-      <h2>Songs</h2>
-
-      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-        {VIEWS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setView(key)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: "20px",
-              border: view === key ? "2px solid #333" : "1px solid #ccc",
-              backgroundColor: view === key ? "#333" : "white",
-              color: view === key ? "white" : "black",
-              cursor: "pointer",
-            }}
-          >
-            {label}
-          </button>
-        ))}
+    <div className="card">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h2 className="text-lg">Songs</h2>
+        <div className="flex gap-2 flex-wrap">
+          {VIEWS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setView(key)}
+              className={view === key ? "btn-primary !px-3 !py-1.5 text-xs" : "btn-outline !px-3 !py-1.5 text-xs"}
+              aria-pressed={view === key}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {loading && <p>Loading chart...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loading && <p className="text-sm text-muted">Loading chart…</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      {songAnalytics && view === "mostPlayed" && (
-        songAnalytics.mostPlayed.length === 0 ? <p>No plays yet.</p> : (
+      {songAnalytics && !loading && view === "mostPlayed" && (
+        songAnalytics.mostPlayed.length === 0 ? (
+          <p className="text-sm text-muted">No plays yet.</p>
+        ) : (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={songAnalytics.mostPlayed} layout="vertical" margin={{ left: 80 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="playCount" fill="#4f46e5" name="Plays" />
+              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: colors.text }} />
+              <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 12, fill: colors.text }} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Bar dataKey="playCount" fill={colors.primary} name="Plays" />
             </BarChart>
           </ResponsiveContainer>
         )
       )}
 
-      {songAnalytics && view === "uploads" && (
+      {songAnalytics && !loading && view === "uploads" && (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={songAnalytics.uploadsByDay}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Line type="monotone" dataKey="count" stroke="#f97316" strokeWidth={2} name="Uploads" />
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+            <XAxis dataKey="date" tick={{ fontSize: 12, fill: colors.text }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: colors.text }} />
+            <Tooltip contentStyle={chartTooltipStyle} />
+            <Line type="monotone" dataKey="count" stroke={colors.warning} strokeWidth={2} name="Uploads" />
           </LineChart>
         </ResponsiveContainer>
       )}
 
-      {songAnalytics && view === "mostLiked" && (
-        songAnalytics.mostLiked.length === 0 ? <p>No likes yet.</p> : (
+      {songAnalytics && !loading && view === "mostLiked" && (
+        songAnalytics.mostLiked.length === 0 ? (
+          <p className="text-sm text-muted">No likes yet.</p>
+        ) : (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={songAnalytics.mostLiked} layout="vertical" margin={{ left: 80 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="likesCount" fill="#e11d48" name="Likes" />
+              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: colors.text }} />
+              <YAxis type="category" dataKey="title" width={150} tick={{ fontSize: 12, fill: colors.text }} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Bar dataKey="likesCount" fill={colors.accent} name="Likes" />
             </BarChart>
           </ResponsiveContainer>
         )

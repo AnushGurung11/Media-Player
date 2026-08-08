@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Player from "./Player";
+import ThemeToggle from "./ThemeToggle";
 
 function Layout({ children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -12,13 +13,16 @@ function Layout({ children }) {
         <span className="text-lg font-display font-bold tracking-tight">
           VIBE<span className="text-blood">.</span>
         </span>
-        <button
-          onClick={() => setMobileNavOpen(true)}
-          className="text-xl text-muted hover:text-text transition-colors"
-          aria-label="Open menu"
-        >
-          ☰
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => setMobileNavOpen(true)}
+            className="text-xl text-muted hover:text-text transition-colors"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
       </div>
 
       <div className="flex">

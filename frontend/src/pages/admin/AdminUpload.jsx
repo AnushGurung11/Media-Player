@@ -4,19 +4,17 @@ import TrackUploadForm from "../../components/TrackUploadForm";
 function AdminUpload() {
   return (
     <AdminLayout>
-      <h1>Upload New Track</h1>
-      <p style={{ color: "gray" }}>
-        Select an audio file — metadata will be extracted automatically.
-        Review the fields, choose a license, confirm consent, then upload.
-      </p>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl">Upload New Track</h1>
+          <p className="text-sm text-muted">
+            Select an audio file — metadata will be extracted automatically.
+            Review the fields, choose a license, confirm consent, then upload.
+          </p>
+        </div>
 
-      <hr />
-
-      <TrackUploadForm
-        onSuccess={() => {
-          // e.g. navigate to /admin/tracks, or leave the success message showing
-        }}
-      />
+        <TrackUploadForm />
+      </div>
     </AdminLayout>
   );
 }

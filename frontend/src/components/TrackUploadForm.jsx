@@ -27,7 +27,7 @@ function Step({ number, title, children }) {
   return (
     <div className="card">
       <div className="flex items-center gap-3 mb-4">
-        <span className="w-6 h-6 rounded-full bg-blood-dim/40 text-red-300 text-xs font-bold flex items-center justify-center shrink-0">
+        <span className="w-6 h-6 rounded-full bg-blood-dim/40 text-danger text-xs font-bold flex items-center justify-center shrink-0">
           {number}
         </span>
         <h3 className="text-base">{title}</h3>
@@ -73,13 +73,13 @@ function TrackUploadForm({ onSuccess }) {
 
         <div className="mt-3 space-y-1">
           {previewLoading && (
-            <p role="status" className="text-sm text-blue-400">⏳ Extracting metadata...</p>
+            <p role="status" className="text-sm text-info">⏳ Extracting metadata...</p>
           )}
           {previewError && (
-            <p role="alert" className="text-sm text-amber-400">⚠ {previewError}</p>
+            <p role="alert" className="text-sm text-warning">⚠ {previewError}</p>
           )}
           {metadataLoaded && (
-            <p className="text-sm text-green-400">✅ Metadata extracted — review fields below.</p>
+            <p className="text-sm text-success">✅ Metadata extracted — review fields below.</p>
           )}
           {audioFile && (
             <p className="text-xs text-muted">
@@ -165,12 +165,12 @@ function TrackUploadForm({ onSuccess }) {
       </Step>
 
       {uploadError && (
-        <div role="alert" className="rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
+        <div role="alert" className="rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-danger">
           <strong>Error:</strong> {uploadError}
         </div>
       )}
       {uploadSuccess && (
-        <div role="status" className="rounded-md border border-green-600 bg-green-950/30 px-3 py-2 text-sm text-green-300">
+        <div role="status" className="rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
           {uploadSuccess}
         </div>
       )}

@@ -45,7 +45,7 @@ function DiscoverPage() {
       {loading && <p className="text-sm text-muted text-center">Searching...</p>}
 
       {error && (
-        <div className="mb-4 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-red-300">
+        <div className="mb-4 rounded-md border border-blood bg-blood-dim/20 px-3 py-2 text-sm text-danger">
           <strong>Error:</strong> {error}
         </div>
       )}

@@ -1,43 +1,142 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import ThemeToggle from "../../components/ThemeToggle";
 
-const navItems = [
-  { to: "/admin/dashboard", label: "Dashboard" },
-  { to: "/admin/upload", label: "Upload Track" },
-  { to: "/admin/tracks", label: "Manage Tracks" },
+const NAV_ITEMS = [
+  { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
+  { to: "/admin/upload", label: "Upload Track", icon: "＋" },
+  { to: "/admin/tracks", label: "Manage Tracks", icon: "🎵" },
 ];
 
 function AdminLayout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { handleLogout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const isActive = (to) => location.pathname === to;
+
+  const navLink = (item, extra = "") =>
+    `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${extra} ${
+      isActive(item.to)
+        ? "bg-blood-dim/30 text-danger"
+        : "text-muted hover:text-text hover:bg-surface-2"
+    }`;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="min-h-screen bg-ink text-text flex flex-col md:flex-row">
+      {/* ── Desktop sidebar ── */}
+      <aside className="hidden md:flex md:w-64 shrink-0 flex-col bg-surface border-r border-border sticky top-0 h-screen">
+        <div className="px-5 py-5 flex items-center justify-between">
+          <span className="text-xl font-display font-bold tracking-tight">
+            VIBE<span className="text-blood">.</span>
+            <span className="ml-2 text-xs font-medium text-muted align-middle">
+              Admin
+            </span>
+          </span>
+          <ThemeToggle />
+        </div>
 
-      {/* Sidebar */}
-      <div style={{ width: "200px", borderRight: "1px solid #ccc", padding: "16px" }}>
-        <h3>Admin Panel</h3>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
-          {navItems.map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              style={{ fontWeight: location.pathname === to ? "bold" : "normal" }}
-            >
-              {location.pathname === to ? "→ " : ""}{label}
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+          <div className="pt-2 pb-1 px-3 text-xs uppercase tracking-wide text-muted">
+            Management
+          </div>
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.to} to={item.to} className={navLink(item)}>
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
             </Link>
           ))}
+          <div className="pt-4 pb-1 px-3 text-xs uppercase tracking-wide text-muted">
+            Site
+          </div>
+          <Link to="/" className={navLink({ to: "/" })}>
+            <span>🏠</span>
+            <span>Back to Player</span>
+          </Link>
         </nav>
-        <hr />
-        <Link to="/">← Back to Player</Link>
-        <br /><br />
-        <button onClick={handleLogout}>Logout</button>
-      </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, padding: "24px" }}>
-        {children}
-      </div>
+        <div className="px-3 py-4 border-t border-border">
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="btn-ghost w-full"
+          >
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Mobile top bar ── */}
+      <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-lg font-display font-bold tracking-tight">
+            VIBE<span className="text-blood">.</span>
+            <span className="ml-2 text-xs font-medium text-muted align-middle">
+              Admin
+            </span>
+          </span>
+          <ThemeToggle />
+        </div>
+        <nav className="flex gap-1 px-3 pb-2 overflow-x-auto">
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.to} to={item.to} className={navLink(item)}>
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+          <Link to="/" className={navLink({ to: "/" })}>
+            <span>🏠</span>
+            <span>Player</span>
+          </Link>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted hover:text-text whitespace-nowrap"
+          >
+            <span>⎋</span>
+            <span>Logout</span>
+          </button>
+        </nav>
+      </header>
+
+      {/* ── Content ── */}
+      <main className="flex-1 min-w-0 p-4 md:p-8">{children}</main>
+
+      {/* ── Logout confirm ── */}
+      {showLogoutConfirm && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          <div
+            className="card max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base mb-2">Log out of VIBE?</h3>
+            <p className="text-sm text-muted mb-5">
+              You'll need to log in again to keep listening.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  handleLogout();
+                  navigate("/login");
+                }}
+                className="btn-danger"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

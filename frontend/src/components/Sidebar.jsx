@@ -2,6 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: "🏠" },
@@ -21,7 +22,7 @@ function Sidebar({ mobileOpen, onMobileClose }) {
       collapsed ? "md:justify-center" : ""
     } ${
       location.pathname === path
-        ? "bg-blood-dim/30 text-red-300"
+        ? "bg-blood-dim/30 text-danger"
         : "text-muted hover:text-text hover:bg-surface-2"
     }`;
 
@@ -105,14 +106,17 @@ function Sidebar({ mobileOpen, onMobileClose }) {
             <div className="font-medium truncate">{user.username}</div>
             {isAdmin && <span className="badge">{user.role}</span>}
           </div>
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className={`btn-ghost w-full ${collapsed ? "md:!px-0" : ""}`}
-            title={collapsed ? "Logout" : undefined}
-          >
-            <span className={collapsed ? "md:hidden" : ""}>Logout</span>
-            <span className={collapsed ? "hidden md:inline" : "hidden"}>⎋</span>
-          </button>
+          <div className="flex items-center gap-2 px-1">
+            <ThemeToggle />
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className={`btn-ghost flex-1 ${collapsed ? "md:!px-0" : ""}`}
+              title={collapsed ? "Logout" : undefined}
+            >
+              <span className={collapsed ? "md:hidden" : ""}>Logout</span>
+              <span className={collapsed ? "hidden md:inline" : "hidden"}>⎋</span>
+            </button>
+          </div>
         </div>
       </aside>
 

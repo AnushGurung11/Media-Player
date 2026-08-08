@@ -201,7 +201,7 @@ function Player() {
         value={Math.min(progress, duration || 0)}
         onChange={(e) => handleSeek(Number(e.target.value))}
         disabled={!streamUrl}
-        className="w-full h-1 accent-[#dc2626] cursor-pointer block disabled:cursor-not-allowed"
+        className="w-full h-1 accent-blood cursor-pointer block disabled:cursor-not-allowed"
         aria-label="Seek"
       />
 
@@ -257,7 +257,7 @@ function Player() {
             <p className="text-xs text-muted hidden sm:block">Loading...</p>
           )}
           {error && (
-            <p className="text-xs text-red-400 hidden sm:block">{error}</p>
+            <p className="text-xs text-danger hidden sm:block">{error}</p>
           )}
 
           {!loading && !error && (
@@ -284,7 +284,7 @@ function Player() {
             step={0.01}
             value={volume}
             onChange={(e) => handleVolume(Number(e.target.value))}
-            className="w-full h-1 accent-[#dc2626] cursor-pointer"
+            className="w-full h-1 accent-blood cursor-pointer"
             aria-label="Volume"
           />
         </div>
