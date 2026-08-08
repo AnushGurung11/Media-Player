@@ -49,44 +49,46 @@ function PlaylistModal({ playlist, onClose }) {
       aria-label={`${playlist.name} playlist`}
     >
       <div
-        className="card !p-0 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
+        className="card !p-0 w-full max-w-2xl md:max-w-3xl max-h-[85vh] flex flex-col overflow-hidden rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-5 border-b border-border">
-          <div className="flex items-center gap-4 min-w-0">
+        <div className="flex items-start justify-between gap-4 p-5 md:p-6 border-b border-border">
+          <div className="flex items-center gap-4 md:gap-5 min-w-0">
             {playlist.coverUrl ? (
               <img
                 src={playlist.coverUrl}
                 alt={`${playlist.name} cover`}
-                className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover border border-border shrink-0"
+                className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-border shrink-0"
               />
             ) : (
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-muted shrink-0">
-                <ListMusic size={28} strokeWidth={1.5} />
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-surface-2 border border-border flex items-center justify-center text-muted shrink-0">
+                <ListMusic size={32} strokeWidth={1.5} />
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="text-lg md:text-xl truncate">{playlist.name}</h3>
-              <p className="text-sm text-muted">
+              <h3 className="text-xl md:text-2xl font-bold truncate">
+                {playlist.name}
+              </h3>
+              <p className="text-sm text-muted mt-0.5">
                 {songs.length} {songs.length === 1 ? "song" : "songs"}
                 {!playlist.isOwner && " · Public"}
               </p>
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2.5 mt-4">
                 <button
                   onClick={() => playList(songs, { shuffled: false })}
                   disabled={songs.length === 0}
-                  className="btn-primary !px-4 !py-2 text-sm"
+                  className="btn-primary !px-6 !py-2.5 text-sm"
                 >
-                  <Play size={15} fill="currentColor" />
+                  <Play size={16} fill="currentColor" />
                   Play
                 </button>
                 <button
                   onClick={() => playList(songs, { shuffled: true })}
                   disabled={songs.length === 0}
-                  className="btn-outline !px-4 !py-2 text-sm"
+                  className="btn-outline !px-6 !py-2.5 text-sm"
                 >
-                  <Shuffle size={15} />
+                  <Shuffle size={16} />
                   Shuffle
                 </button>
               </div>
@@ -94,17 +96,17 @@ function PlaylistModal({ playlist, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="btn-ghost !p-2 shrink-0"
+            className="btn-ghost !p-2.5 shrink-0"
             aria-label="Close playlist"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Song list */}
         <div className="overflow-y-auto flex-1">
           {songs.length === 0 ? (
-            <p className="text-sm text-muted text-center py-10 px-4">
+            <p className="text-sm text-muted text-center py-12 px-6">
               No songs in this playlist yet.
             </p>
           ) : (
@@ -122,30 +124,51 @@ function PlaylistModal({ playlist, onClose }) {
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") playSong(song);
                     }}
-                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-surface-2 ${
+                    className={`group/row flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 cursor-pointer transition-colors hover:bg-surface-2 ${
                       isPlaying ? "bg-surface-2" : ""
                     }`}
                   >
-                    <span className="w-6 text-xs text-muted tabular-nums shrink-0">
+                    <span className="w-7 shrink-0 flex justify-center">
                       {isPlaying ? (
-                        <span className="inline-flex items-end gap-[2px] h-3.5" aria-hidden="true">
-                          <span className="eq-bar w-[2.5px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "0ms" }} />
-                          <span className="eq-bar w-[2.5px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "180ms" }} />
-                          <span className="eq-bar w-[2.5px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "360ms" }} />
+                        <span
+                          className="inline-flex items-end gap-[2px] h-3.5"
+                          aria-hidden="true"
+                        >
+                          <span
+                            className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <span
+                            className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm"
+                            style={{ animationDelay: "180ms" }}
+                          />
+                          <span
+                            className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm"
+                            style={{ animationDelay: "360ms" }}
+                          />
                         </span>
                       ) : (
-                        i + 1
+                        <>
+                          <Play
+                            size={14}
+                            fill="currentColor"
+                            className="hidden text-text group-hover/row:block"
+                          />
+                          <span className="text-xs text-muted tabular-nums group-hover/row:hidden">
+                            {i + 1}
+                          </span>
+                        </>
                       )}
                     </span>
                     {song.coverUrl ? (
                       <img
                         src={song.coverUrl}
                         alt=""
-                        className="w-10 h-10 rounded object-cover shrink-0"
+                        className="w-11 h-11 rounded-lg object-cover shrink-0"
                       />
                     ) : (
-                      <span className="w-10 h-10 rounded bg-surface-2 flex items-center justify-center text-muted shrink-0">
-                        <Music size={16} strokeWidth={1.5} />
+                      <span className="w-11 h-11 rounded-lg bg-surface-2 flex items-center justify-center text-muted shrink-0">
+                        <Music size={18} strokeWidth={1.5} />
                       </span>
                     )}
                     <span className="min-w-0 flex-1">
@@ -156,11 +179,11 @@ function PlaylistModal({ playlist, onClose }) {
                       >
                         {song.title || "—"}
                       </span>
-                      <span className="block text-xs text-muted truncate">
+                      <span className="block text-xs text-muted truncate mt-0.5">
                         {song.artist || "—"}
                       </span>
                     </span>
-                    <span className="text-xs text-muted tabular-nums shrink-0">
+                    <span className="text-xs text-muted tabular-nums shrink-0 hidden sm:block">
                       {song.duration ? formatTime(song.duration) : ""}
                     </span>
                   </li>
