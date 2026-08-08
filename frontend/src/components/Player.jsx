@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "../services/api";
 import { usePlayer } from "../hooks/usePlayer";
 import { formatTime } from "../utils/format";
+import { ListOrdered, Shuffle, Dices, Download } from "lucide-react";
 
 const Icon = {
   Prev: (props) => (
@@ -292,19 +293,23 @@ function Player() {
         {/* Meta — hidden on very small screens to keep the bar from overflowing */}
         <div className="hidden sm:flex w-auto md:w-40 items-center justify-end gap-2 shrink-0">
           {isPreview && <span className="badge">Preview</span>}
-          <span className="text-xs text-muted hidden lg:inline">
-            {mode === "normal"
-              ? "Normal"
-              : mode === "shuffle"
-                ? "Shuffle"
-                : "Random"}
+          <span className="text-xs text-muted hidden lg:inline-flex items-center gap-1">
+            {mode === "normal" ? (
+              <ListOrdered size={14} strokeWidth={1.75} />
+            ) : mode === "shuffle" ? (
+              <Shuffle size={14} strokeWidth={1.75} />
+            ) : (
+              <Dices size={14} strokeWidth={1.75} />
+            )}
+            {mode === "normal" ? "Normal" : mode === "shuffle" ? "Shuffle" : "Random"}
           </span>
           {currentTrack.isDownloadable && (
             <button
               onClick={handleDownload}
-              className="btn-ghost !px-2 !py-1 text-xs"
+              className="btn-ghost !px-2 !py-1 text-xs flex items-center"
+              aria-label="Download track"
             >
-              ⬇
+              <Download size={15} />
             </button>
           )}
         </div>

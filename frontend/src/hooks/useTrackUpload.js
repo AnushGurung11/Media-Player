@@ -31,6 +31,7 @@ export function useTrackUpload(onSuccess) {
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
   const [metadataLoaded, setMetadataLoaded] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const audioInputRef = useRef(null);
   const coverInputRef = useRef(null);
@@ -145,6 +146,7 @@ export function useTrackUpload(onSuccess) {
     setMetadataLoaded(false);
     setUploadError("");
     setPreviewError("");
+    setUploadProgress(0);
     if (audioInputRef.current) audioInputRef.current.value = "";
     if (coverInputRef.current) coverInputRef.current.value = "";
   }, []);
@@ -171,6 +173,8 @@ export function useTrackUpload(onSuccess) {
       }
 
       setUploadLoading(true);
+      setUploadProgress(0);
+      setUploadSuccess("");
       try {
         const data = new FormData();
         data.append("audio", audioFile);
@@ -182,10 +186,18 @@ export function useTrackUpload(onSuccess) {
         data.append("license", formData.license);
         data.append("consent", "true");
 
-        const res = await api.post("/tracks/upload", data);
+        const res = await api.post("/tracks/upload", data, {
+          onUploadProgress: (event) => {
+            if (event.total > 0) {
+              setUploadProgress(
+                Math.round((event.loaded / event.total) * 100),
+              );
+            }
+          },
+        });
         const track = res.data.track;
 
-        setUploadSuccess(`✅ "${track.title}" by ${track.artist} uploaded successfully!`);
+        setUploadSuccess(`"${track.title}" by ${track.artist} uploaded successfully!`);
         resetForm();
         onSuccess?.(track);
       } catch (err) {
@@ -214,6 +226,7 @@ export function useTrackUpload(onSuccess) {
     uploadError,
     uploadSuccess,
     metadataLoaded,
+    uploadProgress,
     // refs
     audioInputRef,
     coverInputRef,

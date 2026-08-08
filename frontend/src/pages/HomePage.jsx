@@ -6,7 +6,20 @@ import { usePlayer } from "../hooks/usePlayer";
 import { useLikeTrack } from "../hooks/useLikeTrack";
 import { usePlaylists } from "../hooks/usePlaylists";
 import TrackCard from "../components/Trackcard";
-import { ListMusic } from "lucide-react";
+import SegmentedControl from "../components/SegmentedControl";
+import { ListMusic, ListOrdered, Shuffle, Dices, Info } from "lucide-react";
+
+const PLAYBACK_MODES = [
+  { value: "normal", label: "Normal", Icon: ListOrdered },
+  { value: "shuffle", label: "Shuffle", Icon: Shuffle },
+  { value: "random", label: "Random", Icon: Dices },
+];
+
+const MODE_DESCRIPTIONS = {
+  normal: "Plays tracks in their original order.",
+  shuffle: "Shuffles the queue — toggling again reshuffles it.",
+  random: "Picks the next track at random each time.",
+};
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -134,24 +147,19 @@ function HomePage() {
         )}
       </section>
 
-      {/* Mode toggle */}
+      {/* Playback mode */}
       <section>
-        <h2 className="text-xl mb-4">Playback</h2>
-        <div className="flex gap-2 flex-wrap">
-          {["normal", "shuffle", "random"].map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={mode === m ? "btn-primary !px-4 !py-2" : "btn-outline !px-4 !py-2"}
-            >
-              {m.charAt(0).toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-          <span className="text-xs text-muted self-center ml-1">
-            {mode === "normal" && "Original list order"}
-            {mode === "shuffle" && "Shuffled order (reshuffles on toggle)"}
-            {mode === "random" && "Next song is random each time"}
-          </span>
+        <h2 className="text-xl mb-4">Playback mode</h2>
+        <div className="flex flex-col items-start gap-3">
+          <SegmentedControl
+            options={PLAYBACK_MODES}
+            value={mode}
+            onChange={setMode}
+          />
+          <p className="text-xs text-muted flex items-center gap-1.5">
+            <Info size={14} className="shrink-0" />
+            {MODE_DESCRIPTIONS[mode]}
+          </p>
         </div>
       </section>
 
