@@ -3,14 +3,6 @@
  */
 // so this will store the connection of DB
 
-process.env.DD_TRACE_AGENTLESS = 'true';
-
-require('dd-trace').init({
-  service: 'vibe-backend',
-  env: 'production',
-  logInjection: true
-});
-
 require("dotenv").config();
 const cors = require("cors"); /*this is for resource sharing cross origin resource sharing */
 const express = require("express"); /* creating a constant for storing the express lib from node modules*/
@@ -23,9 +15,16 @@ const logger = require("./logger");
 const app = express(); 
 connectDB(); 
 
+const corsConfig = {
+  origin: ["https://media-player-seven-pink.vercel.app","http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}
+
 // This app object is the actual back end
 // this command is telling the whole backend to use this modules and functions
-app.use(cors()); 
+app.use(cors(corsConfig)); 
 // Specifying the use of JSON in express
 app.use(express.json()); 
 
