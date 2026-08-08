@@ -51,16 +51,19 @@ export function usePlaylists() {
     );
   };
 
-  const handleCreate = useCallback(async (name) => {
+  const handleCreate = useCallback(async (name, coverFile) => {
     const trimmed = name.trim();
     if (!trimmed) {
       return { error: "Playlist name is required." };
     }
     try {
-      const res = await api.post("/playlists", { name: trimmed });
+      const data = new FormData();
+      data.append("name", trimmed);
+      if (coverFile) data.append("cover", coverFile);
+      const res = await api.post("/playlists", data);
       const newPlaylist = res.data.playlist ?? res.data;
       setPlaylists((prev) => [...prev, newPlaylist]);
-      return { success: `✅ "${newPlaylist.name}" created!` };
+      return { success: `"${newPlaylist.name}" created!` };
     } catch (err) {
       return {
         error:

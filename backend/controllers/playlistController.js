@@ -1,5 +1,35 @@
 const Playlist = require("../models/Playlist");
-const supabase = require("../config/supabase").supabase;
+const { supabase, uploadToSupabase } = require("../config/supabase");
+
+// Shared formatter: maps playlist cover + song covers from the same
+// Supabase "cover" bucket used by tracks, and flags ownership.
+const formatPlaylist = (playlist, userId) => {
+    const obj = playlist.toObject();
+
+    let coverUrl = null;
+    if (obj.coverKey) {
+        const { data } = supabase.storage.from("cover").getPublicUrl(obj.coverKey);
+        coverUrl = data.publicUrl;
+    }
+
+    const songsWithUrls = (obj.songs || []).map((song) => {
+        if (typeof song !== "object" || !song.coverKey) return song;
+        const { data } = supabase.storage.from("cover").getPublicUrl(song.coverKey);
+        return { ...song, coverUrl: data.publicUrl };
+    });
+
+    // `user` may be an unpopulated ObjectId or a populated doc — handle both
+    const ownerId = obj.user?.username !== undefined
+        ? obj.user?._id?.toString()
+        : obj.user?.toString?.() ?? "";
+
+    return {
+        ...obj,
+        coverUrl,
+        songs: songsWithUrls,
+        isOwner: !!userId && ownerId === userId.toString(),
+    };
+};
 
 // -------------------------------------------------------
 // @route   GET /api/playlists
@@ -15,10 +45,7 @@ const getPlaylists = async (req, res) => {
             .populate("songs")
             .populate("user", "username");
 
-        const formatted = playlists.map((p) => ({
-            ...p.toObject(),
-            isOwner: p.user?._id?.toString() === req.user._id.toString()
-        }));
+        const formatted = playlists.map((p) => formatPlaylist(p, req.user._id));
 
         res.status(200).json(formatted);
     } catch (error) {
@@ -48,22 +75,7 @@ const getPlaylistById = async (req, res) => {
             return res.status(403).json({ message: "Not authorized" });
         }
 
-        const songsWithUrls = playlist.songs.map((song) => {
-            let coverUrl = null;
-            if (song.coverKey) {
-                const { data } = supabase.storage
-                    .from("cover")
-                    .getPublicUrl(song.coverKey);
-                coverUrl = data.publicUrl;
-            }
-            return { ...song.toObject(), coverUrl };
-        });
-
-        res.status(200).json({
-            ...playlist.toObject(),
-            songs: songsWithUrls,
-            isOwner
-        });
+        res.status(200).json(formatPlaylist(playlist, req.user._id));
 
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -84,16 +96,23 @@ const createPlaylist = async (req, res) => {
             return res.status(400).json({ message: "Playlist name is required" });
         }
 
+        // Optional cover image — same Supabase "cover" bucket as track covers
+        let coverKey = null;
+        if (req.file) {
+            coverKey = await uploadToSupabase(req.file, "cover");
+        }
+
         const playlist = await Playlist.create({
             name,
             user: req.user._id,
             songs: [],
+            coverKey,
             isPublic: req.user.role === "admin"
         });
 
         res.status(201).json({
             message: "Playlist created successfully",
-            playlist: { ...playlist.toObject(), isOwner: true }
+            playlist: formatPlaylist(playlist, req.user._id)
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -139,7 +158,7 @@ const addSongToPlaylist = async (req, res) => {
 
         res.status(200).json({
             message: "Song added to playlist",
-            playlist: { ...playlist.toObject(), isOwner: true }
+            playlist: formatPlaylist(playlist, req.user._id)
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -173,7 +192,7 @@ const removeSongFromPlaylist = async (req, res) => {
 
         res.status(200).json({
             message: "Song removed from playlist",
-            playlist: { ...playlist.toObject(), isOwner: true }
+            playlist: formatPlaylist(playlist, req.user._id)
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -195,6 +214,12 @@ const deletePlaylist = async (req, res) => {
 
         if (playlist.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "Not authorized" });
+        }
+
+        // Best-effort cleanup of the cover from Supabase — don't block the
+        // DB delete on a storage hiccup.
+        if (playlist.coverKey) {
+            await supabase.storage.from("cover").remove([playlist.coverKey]);
         }
 
         await playlist.deleteOne();

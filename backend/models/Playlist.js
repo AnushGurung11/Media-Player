@@ -6,6 +6,8 @@ const playlistSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     songs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Track" }],
     shuffle: { type: Boolean, default: false },
+    // Cover image stored in the same Supabase "cover" bucket as track covers
+    coverKey: { type: String, default: null },
     // Admin-created playlists are visible to everyone; user playlists are private
     isPublic: { type: Boolean, default: false },
   },

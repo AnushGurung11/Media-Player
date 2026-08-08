@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePlaylists } from "../hooks/usePlaylists";
 import { usePlayer } from "../hooks/usePlayer";
 import { useAuth } from "../hooks/useAuth";
@@ -11,7 +11,27 @@ import {
   Shuffle,
   X,
   Music,
+  Image,
 } from "lucide-react";
+
+const MAX_COVER_SIZE_MB = 5;
+
+/* Cover preview with proper object-URL lifecycle */
+function CoverPreview({ file }) {
+  const [url] = useState(() => URL.createObjectURL(file));
+
+  useEffect(() => {
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
+
+  return (
+    <img
+      src={url}
+      alt="Cover preview"
+      className="w-16 h-16 rounded-lg object-cover border border-border shrink-0"
+    />
+  );
+}
 
 function PlaylistsPage() {
   const {
@@ -46,18 +66,44 @@ function PlaylistsPage() {
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
+  const [coverFile, setCoverFile] = useState(null);
+  const [coverError, setCoverError] = useState("");
+  const coverInputRef = useRef(null);
 
   const onCreateSubmit = async (e) => {
     e.preventDefault();
     setCreateError("");
     setCreateSuccess("");
-    const result = await handleCreate(newName);
+    const result = await handleCreate(newName, coverFile);
     if (result.error) setCreateError(result.error);
     if (result.success) {
       setCreateSuccess(result.success);
       setNewName("");
+      setCoverFile(null);
+      setCoverError("");
       setShowCreateForm(false);
     }
+  };
+
+  const handleCoverPick = (e) => {
+    const file = e.target.files[0] || null;
+    setCoverError("");
+    if (file) {
+      if (file.size > MAX_COVER_SIZE_MB * 1024 * 1024) {
+        setCoverError(`Cover image must be under ${MAX_COVER_SIZE_MB}MB.`);
+        e.target.value = "";
+        return;
+      }
+      setCoverFile(file);
+      return;
+    }
+    setCoverFile(null);
+  };
+
+  const removeCover = () => {
+    if (coverInputRef.current) coverInputRef.current.value = "";
+    setCoverFile(null);
+    setCoverError("");
   };
 
   const handleToggleLike = async (song) => {
@@ -96,9 +142,17 @@ function PlaylistsPage() {
         {/* Playlist header */}
         <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-muted shrink-0">
-              <ListMusic size={36} strokeWidth={1.5} />
-            </div>
+            {selected.coverUrl ? (
+              <img
+                src={selected.coverUrl}
+                alt={`${selected.name} cover`}
+                className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border border-border shrink-0"
+              />
+            ) : (
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-muted shrink-0">
+                <ListMusic size={36} strokeWidth={1.5} />
+              </div>
+            )}
             <div>
               <h1 className="text-2xl md:text-3xl">{selected.name}</h1>
               <p className="text-sm text-muted mt-1">
@@ -288,6 +342,48 @@ function PlaylistsPage() {
             className="input"
           />
           {createError && <p className="text-sm text-danger">{createError}</p>}
+
+          <div className="border-t border-border pt-4">
+            <label className="block text-sm font-medium mb-1.5">
+              Cover image <span className="text-muted">(optional)</span>
+            </label>
+            {coverFile ? (
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2.5">
+                <CoverPreview key={coverFile.name} file={coverFile} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{coverFile.name}</p>
+                  <p className="text-xs text-muted">
+                    {(coverFile.size / 1024).toFixed(0)} KB
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeCover}
+                  className="btn-ghost !px-2 !py-1.5 text-xs flex items-center gap-1"
+                >
+                  <X size={14} />
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border hover:border-text transition-colors p-6 cursor-pointer text-center">
+                <Image size={24} strokeWidth={1.25} className="text-muted" />
+                <span className="text-sm">
+                  Add a cover <span className="text-muted">(JPEG · PNG · WEBP, max 5 MB)</span>
+                </span>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleCoverPick}
+                  aria-label="Playlist cover"
+                  className="sr-only"
+                />
+              </label>
+            )}
+            {coverError && <p className="text-sm text-danger mt-1.5">{coverError}</p>}
+          </div>
+
           <div className="flex gap-2">
             <button type="submit" className="btn-primary flex-1">
               Create
@@ -332,9 +428,17 @@ function PlaylistsPage() {
               }}
               className="card !p-0 overflow-hidden cursor-pointer transition-colors hover:border-text group"
             >
-              <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
-                <ListMusic size={40} strokeWidth={1.5} />
-              </div>
+              {pl.coverUrl ? (
+                <img
+                  src={pl.coverUrl}
+                  alt={`${pl.name} cover`}
+                  className="w-full aspect-square object-cover"
+                />
+              ) : (
+                <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
+                  <ListMusic size={40} strokeWidth={1.5} />
+                </div>
+              )}
               <div className="p-3">
                 <p className="text-sm font-medium truncate">{pl.name}</p>
                 <p className="text-xs text-muted mt-0.5">
