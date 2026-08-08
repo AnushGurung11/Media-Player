@@ -1,13 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../services/api";
 import { usePlayer } from "../hooks/usePlayer";
-
-function formatTime(seconds) {
-  if (!seconds || Number.isNaN(seconds)) return "0:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
+import { formatTime } from "../utils/format";
 
 const Icon = {
   Prev: (props) => (

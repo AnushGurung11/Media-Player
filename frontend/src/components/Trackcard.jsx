@@ -1,3 +1,5 @@
+import { formatTime } from "../utils/format";
+
 const PlayIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" {...props}>
     <path d="M7 4l14 8-14 8z" />
@@ -99,9 +101,7 @@ function TrackCard({
           {liked ? "❤" : "🤍"} {likesCount}
         </button>
         <span className="text-xs text-muted truncate">
-          {track.duration
-            ? `${Math.floor(track.duration / 60)}:${String(track.duration % 60).padStart(2, "0")}`
-            : ""}
+          {track.duration ? formatTime(track.duration) : ""}
           {track.duration && track.playCount != null ? " · " : ""}
           {track.playCount != null ? `${track.playCount} plays` : ""}
         </span>

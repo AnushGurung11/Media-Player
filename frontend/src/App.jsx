@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./hooks/useAuth";
 import { PlayerProvider } from "./context/PlayerContext";
 import Layout from "./components/Layout";
+import AdminRoute from "./routes/AdminRoute";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -17,16 +17,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/login" replace />;
-}
-
-function AdminRoute({ children }) {
-  const { isAdmin } = useAuth();
-  const token = localStorage.getItem("token");
-
-  if (!token) return <Navigate to="/login" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
-
-  return children;
 }
 
 function AppRoutes() {
