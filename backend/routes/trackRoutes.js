@@ -12,6 +12,10 @@ const {
     previewTrack,
     uploadTrack,
     getAllTracks,
+    getRecentTracks,
+    getMostPlayedTracks,
+    getRecentlyPlayed,
+    searchTracks,
     streamTrack,
     downloadTrack,
     deleteTrack,
@@ -32,7 +36,13 @@ const uploadFields = upload.fields([
 // Public
 router.get("/", getAllTracks);
 
+// Dashboard section endpoints — must come before any /:id route
+router.get("/recent", getRecentTracks);
+router.get("/most-played", getMostPlayedTracks);
+router.get("/search", searchTracks);
+
 // Authenticated (any logged-in user)
+router.get("/recently-played", protect, getRecentlyPlayed);
 router.get("/:id/stream", protect, streamTrack);
 router.get("/:id/download", protect, downloadTrack);
 router.post("/:id/like", protect, toggleLike);

@@ -1,8 +1,22 @@
 const mm = require("music-metadata");
 const { supabase, uploadToSupabase } = require("../config/supabase");
 const Track = require("../models/Track");
+const User = require("../models/User");
 
 const ALLOWED_LICENSES = ["all-rights-reserved", "CC0", "CC-BY", "CC-BY-SA", "CC-BY-NC"];
+
+// Shared: attach a public coverUrl to each track doc
+const withCoverUrls = (tracks) =>
+    tracks.map((track) => {
+        let coverUrl = null;
+        if (track.coverKey) {
+            const { data } = supabase.storage
+                .from("cover")
+                .getPublicUrl(track.coverKey);
+            coverUrl = data.publicUrl;
+        }
+        return { ...track.toObject(), coverUrl };
+    });
 
 // -------------------------------------------------------
 // @route   POST /api/tracks/preview
@@ -151,6 +165,101 @@ const getAllTracks = async (req, res) => {
 };
 
 // -------------------------------------------------------
+// @route   GET /api/tracks/recent
+// @desc    Latest 5 completed tracks (for dashboard sections)
+// @access  Public
+// -------------------------------------------------------
+const getRecentTracks = async (req, res) => {
+    try {
+        const tracks = await Track.find({ uploadState: "completed" })
+            .select("-audioKey -consentIp")
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        res.status(200).json(withCoverUrls(tracks));
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   GET /api/tracks/most-played
+// @desc    Top 5 tracks by all-time play count
+// @access  Public
+// -------------------------------------------------------
+const getMostPlayedTracks = async (req, res) => {
+    try {
+        const tracks = await Track.find({ uploadState: "completed" })
+            .select("-audioKey -consentIp")
+            .sort({ playCount: -1 })
+            .limit(5);
+
+        res.status(200).json(withCoverUrls(tracks));
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   GET /api/tracks/recently-played
+// @desc    Top 5 tracks the logged-in user streamed recently
+// @access  Protected
+// -------------------------------------------------------
+const getRecentlyPlayed = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .populate("recentlyPlayed.track");
+
+        const played = (user.recentlyPlayed || [])
+            .filter((p) => p.track && p.track.uploadState === "completed")
+            .slice(0, 5)
+            .map((p) => {
+                let coverUrl = null;
+                if (p.track.coverKey) {
+                    const { data } = supabase.storage
+                        .from("cover")
+                        .getPublicUrl(p.track.coverKey);
+                    coverUrl = data.publicUrl;
+                }
+                return { ...p.track.toObject(), coverUrl };
+            });
+
+        res.status(200).json(played);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
+// @route   GET /api/tracks/search?q=
+// @desc    Search the library by title, artist, or album
+// @access  Public
+// -------------------------------------------------------
+const searchTracks = async (req, res) => {
+    try {
+        const q = (req.query.q || "").trim();
+        if (!q) return res.status(200).json([]);
+
+        const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+        const tracks = await Track.find({
+            uploadState: "completed",
+            $or: [
+                { title: regex },
+                { artist: regex },
+                { album: regex },
+                { genre: regex }
+            ]
+        })
+            .select("-audioKey -consentIp")
+            .limit(20);
+
+        res.status(200).json(withCoverUrls(tracks));
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------------------------------------------
 // @route   GET /api/tracks/:id/stream
 // @desc    Get a signed URL for streaming audio
 // @access  Private
@@ -165,6 +274,16 @@ const streamTrack = async (req, res) => {
 
         track.playCount += 1;
         await track.save();
+
+        // Record in the user's recently-played history (dedupe, newest first, cap 10)
+        const existing = (req.user.recentlyPlayed || []).filter(
+            (r) => r.track?.toString() !== track._id.toString()
+        );
+        req.user.recentlyPlayed = [
+            { track: track._id, playedAt: new Date() },
+            ...existing
+        ].slice(0, 10);
+        await req.user.save();
 
         const { data, error } = await supabase.storage
             .from("audio")
@@ -293,4 +412,4 @@ const toggleLike = async (req, res) => {
     }
 };
 
-module.exports = { previewTrack, uploadTrack, getAllTracks, streamTrack, downloadTrack, deleteTrack, toggleLike };
+module.exports = { previewTrack, uploadTrack, getAllTracks, getRecentTracks, getMostPlayedTracks, getRecentlyPlayed, searchTracks, streamTrack, downloadTrack, deleteTrack, toggleLike };

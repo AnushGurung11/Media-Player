@@ -22,7 +22,15 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
-  }
+  },
+  // Per-user play history — capped at 10 entries, newest first
+  recentlyPlayed: [
+    {
+      track: { type: mongoose.Schema.Types.ObjectId, ref: "Track" },
+      playedAt: { type: Date, default: Date.now },
+      _id: false
+    }
+  ]
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {
