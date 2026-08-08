@@ -129,24 +129,28 @@ function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {playlists.map((pl) => (
               <Link key={pl._id} to="/playlists" className="group">
-                <div className="card !p-0 overflow-hidden transition-colors group-hover:border-text">
-                  {pl.coverUrl ? (
-                    <img
-                      src={pl.coverUrl}
-                      alt={`${pl.name} cover`}
-                      className="w-full aspect-square object-cover"
-                    />
-                  ) : (
-                    <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
-                      <ListMusic size={40} strokeWidth={1.5} />
-                    </div>
-                  )}
+                <div className="card !p-0 overflow-hidden card-hover group">
+                  <div className="relative overflow-hidden">
+                    {pl.coverUrl ? (
+                      <img
+                        src={pl.coverUrl}
+                        alt={`${pl.name} cover`}
+                        className="w-full aspect-square object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
+                        <ListMusic size={40} strokeWidth={1.5} />
+                      </div>
+                    )}
+                    <span className="absolute top-2 right-2 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5">
+                      {pl.songs?.length || 0} {pl.songs?.length === 1 ? "song" : "songs"}
+                    </span>
+                  </div>
                   <div className="p-3">
                     <p className="text-sm font-medium truncate">{pl.name}</p>
-                    <p className="text-xs text-muted mt-0.5">
-                      {pl.songs?.length || 0} songs
-                      {!pl.isOwner && " · Public"}
-                    </p>
+                    {!pl.isOwner && (
+                      <p className="text-xs text-muted mt-0.5">Public playlist</p>
+                    )}
                   </div>
                 </div>
               </Link>

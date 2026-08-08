@@ -71,14 +71,18 @@ function DiscoverPage() {
             return (
               <div
                 key={track._id}
-                className={`card group cursor-pointer transition-colors ${
-                  isPlaying ? "border-text" : "hover:border-border"
+                className={`card !p-3 cursor-pointer card-hover group ${
+                  isPlaying ? "border-text bg-surface-2" : ""
                 }`}
                 onClick={() => playResult(track)}
               >
                 <div className="relative w-full aspect-square rounded-md overflow-hidden bg-surface-2 mb-3">
                   {track.coverUrl ? (
-                    <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                    <img
+                      src={track.coverUrl}
+                      alt={track.title}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted">
                       <Music size={36} strokeWidth={1.5} />

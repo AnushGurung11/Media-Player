@@ -95,7 +95,7 @@ export function usePlaylists() {
         });
         const updatedPlaylist = res.data.playlist ?? res.data;
         syncSelected(updatedPlaylist);
-        setPickerMsg("✅ Song added!");
+        setPickerMsg("Song added!");
       } catch (err) {
         setPickerMsg(
           err.response?.data?.message ||

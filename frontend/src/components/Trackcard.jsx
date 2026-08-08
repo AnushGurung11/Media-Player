@@ -33,29 +33,41 @@ function TrackCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onPlay(track);
       }}
-      className={`card !p-3 cursor-pointer group transition-colors hover:border-text ${
+      className={`card !p-3 cursor-pointer group card-hover ${
         isPlaying ? "border-text bg-surface-2" : ""
       }`}
     >
-      <div className="relative mb-3">
+      <div className="relative mb-3 overflow-hidden rounded">
         {track.coverUrl ? (
           <img
             src={track.coverUrl}
             alt={track.title}
-            className="w-full aspect-square object-cover rounded"
+            className="w-full aspect-square object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
-          <div className="w-full aspect-square rounded bg-surface-2 flex items-center justify-center text-muted">
+          <div className="w-full aspect-square bg-surface-2 flex items-center justify-center text-muted">
             <Music size={32} strokeWidth={1.5} />
           </div>
         )}
 
-        {/* Play/pause overlay — always visible while playing, fades in on hover otherwise */}
+        {/* Equalizer — animated playing indicator */}
+        {isPlaying && (
+          <span
+            className="absolute top-2.5 left-2.5 flex items-end gap-[3px] h-4"
+            aria-hidden="true"
+          >
+            <span className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "0ms" }} />
+            <span className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "180ms" }} />
+            <span className="eq-bar w-[3px] h-full bg-btn-primary-bg rounded-sm" style={{ animationDelay: "360ms" }} />
+          </span>
+        )}
+
+        {/* Play/pause overlay — always visible while playing, pops in on hover */}
         <div
-          className={`absolute bottom-2 right-2 rounded-full bg-btn-primary-bg text-btn-primary-fg p-2.5 shadow-lg transition-all ${
+          className={`absolute bottom-2 right-2 rounded-full bg-btn-primary-bg text-btn-primary-fg p-2.5 shadow-lg transition-all duration-300 ease-out ${
             isPlaying
-              ? "opacity-100"
-              : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+              ? "opacity-100 scale-100"
+              : "opacity-0 translate-y-1 scale-75 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100"
           }`}
         >
           {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
@@ -85,7 +97,7 @@ function TrackCard({
             onToggleLike(track);
           }}
           disabled={likingId === track._id}
-          className="btn-ghost !p-1 !px-1.5 text-xs shrink-0"
+          className="btn-ghost !p-1 !px-1.5 text-xs shrink-0 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
         >
           {liked ? <Heart size={14} className="fill-current" /> : <Heart size={14} />}{" "}
           {likesCount}

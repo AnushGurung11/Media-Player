@@ -118,6 +118,23 @@ h1, h2, h3 {
     @apply bg-surface border border-border rounded-xl p-5 md:p-6;
   }
 
+  /* Interactive cards — lift, border, and shadow on hover */
+  .card-hover {
+    @apply transition-all duration-300 ease-out
+           hover:-translate-y-1 hover:border-text
+           hover:shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)];
+  }
+
+  /* Equalizer bars — playing indicator on track covers */
+  .eq-bar {
+    animation: eq-bounce 1s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+  @keyframes eq-bounce {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+
   .input {
     @apply w-full rounded-xl border border-border bg-surface-2 px-3.5 py-2.5 text-sm
            text-text placeholder:text-muted focus:outline-none focus:border-text

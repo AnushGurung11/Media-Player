@@ -12,7 +12,10 @@ import {
   X,
   Music,
   Image,
+  Plus,
+  CircleCheck,
 } from "lucide-react";
+import { formatTime } from "../utils/format";
 
 const MAX_COVER_SIZE_MB = 5;
 
@@ -203,13 +206,13 @@ function PlaylistsPage() {
             {tracks.length === 0 && (
               <p className="text-sm text-muted">No tracks available.</p>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-80 overflow-y-auto pr-1">
+            <ul className="divide-y divide-border max-h-80 overflow-y-auto pr-1 rounded-lg border border-border">
               {tracks.map((track) => {
                 const alreadyAdded = selected.songs?.some(
                   (s) => (s._id || s) === track._id,
                 );
                 return (
-                  <div
+                  <li
                     key={track._id}
                     onClick={() => !alreadyAdded && handleAddSong(track._id)}
                     role="button"
@@ -219,36 +222,65 @@ function PlaylistsPage() {
                         handleAddSong(track._id);
                       }
                     }}
-                    className={`card !p-2.5 transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
                       alreadyAdded
                         ? "opacity-50 cursor-default"
-                        : "cursor-pointer hover:border-text"
+                        : "cursor-pointer hover:bg-surface-2"
                     }`}
                   >
                     {track.coverUrl ? (
                       <img
                         src={track.coverUrl}
                         alt={track.title}
-                        className="w-full aspect-square object-cover rounded mb-2"
+                        className="w-10 h-10 rounded object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-full aspect-square rounded bg-surface mb-2 flex items-center justify-center text-muted">
-                        <Music size={28} strokeWidth={1.5} />
+                      <div className="w-10 h-10 rounded bg-surface-2 flex items-center justify-center text-muted shrink-0">
+                        <Music size={16} strokeWidth={1.5} />
                       </div>
                     )}
-                    <p className="text-xs font-medium truncate">{track.title}</p>
-                    <p className="text-xs text-muted truncate">{track.artist}</p>
-                    <span
-                      className={`text-xs mt-1 block ${
-                        alreadyAdded ? "text-success" : "text-muted"
-                      }`}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{track.title}</p>
+                      <p className="text-xs text-muted truncate">{track.artist}</p>
+                    </div>
+                    {track.duration && (
+                      <span className="text-xs text-muted tabular-nums hidden sm:inline">
+                        {formatTime(track.duration)}
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!alreadyAdded) handleAddSong(track._id);
+                      }}
+                      disabled={alreadyAdded}
+                      className={
+                        alreadyAdded
+                          ? "btn-ghost !px-2.5 !py-1.5 text-xs text-success pointer-events-none"
+                          : "btn-outline !px-2.5 !py-1.5 text-xs"
+                      }
+                      aria-label={
+                        alreadyAdded
+                          ? `${track.title} is already in the playlist`
+                          : `Add ${track.title}`
+                      }
                     >
-                      {alreadyAdded ? "✓ Added" : "+ Add"}
-                    </span>
-                  </div>
+                      {alreadyAdded ? (
+                        <>
+                          <CircleCheck size={14} />
+                          Added
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={14} />
+                          Add
+                        </>
+                      )}
+                    </button>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
         )}
 
@@ -291,7 +323,7 @@ function PlaylistsPage() {
         {pickerMsg && (
           <p
             className={`text-sm mt-4 ${
-              pickerMsg.startsWith("✅") ? "text-success" : "text-danger"
+              pickerMsg === "Song added!" ? "text-success" : "text-danger"
             }`}
           >
             {pickerMsg}
@@ -426,24 +458,29 @@ function PlaylistsPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") handleOpen(pl);
               }}
-              className="card !p-0 overflow-hidden cursor-pointer transition-colors hover:border-text group"
+              className="card !p-0 overflow-hidden cursor-pointer card-hover group"
             >
-              {pl.coverUrl ? (
-                <img
-                  src={pl.coverUrl}
-                  alt={`${pl.name} cover`}
-                  className="w-full aspect-square object-cover"
-                />
-              ) : (
-                <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
-                  <ListMusic size={40} strokeWidth={1.5} />
-                </div>
-              )}
+              <div className="relative overflow-hidden">
+                {pl.coverUrl ? (
+                  <img
+                    src={pl.coverUrl}
+                    alt={`${pl.name} cover`}
+                    className="w-full aspect-square object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="aspect-square bg-surface-2 flex items-center justify-center text-muted">
+                    <ListMusic size={40} strokeWidth={1.5} />
+                  </div>
+                )}
+                <span className="absolute top-2 right-2 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5">
+                  {pl.songs?.length || 0} {pl.songs?.length === 1 ? "song" : "songs"}
+                </span>
+              </div>
               <div className="p-3">
                 <p className="text-sm font-medium truncate">{pl.name}</p>
-                <p className="text-xs text-muted mt-0.5">
-                  {pl.songs?.length || 0} songs{!pl.isOwner && " · Public"}
-                </p>
+                {!pl.isOwner && (
+                  <p className="text-xs text-muted mt-0.5">Public playlist</p>
+                )}
               </div>
             </div>
           ))}
