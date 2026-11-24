@@ -55,7 +55,7 @@ jenkins.yml     Jenkins pipeline
 
 ## Running locally
 
-**Requirements:** Node.js 20+, MongoDB, a Supabase project (or swap the storage client).
+**Requirements:** Node.js 22+, MongoDB, a Supabase project (or swap the storage client).
 
 ```bash
 # backend

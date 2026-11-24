@@ -62,13 +62,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Test connection on server start
+// Test connection on server start (non-fatal: a paused Supabase project must
+// not take the API down)
 const testSupabase = async () => {
-    const { data, error } = await supabase.storage.listBuckets();
-    if (error) {
-        console.error("Supabase connection failed:", error.message);
-    } else {
-        console.log("Supabase connected. Buckets:", data.map(b => b.name));
+    try {
+        const { data, error } = await supabase.storage.listBuckets();
+        if (error) {
+            console.warn("Supabase storage unavailable:", error.message);
+        } else {
+            console.log("Supabase connected. Buckets:", data.map(b => b.name));
+        }
+    } catch (err) {
+        console.warn("Supabase storage unavailable:", err.message);
     }
 };
 testSupabase();
