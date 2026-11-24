@@ -8,6 +8,8 @@ const trackSchema = new mongoose.Schema( //Creating a schema for the song model
         // Can be extracted using music-metadata library
         title: {type: String, required: true},
         artist: {type: String, required: true},
+        // Short blurb shown on track cards and discovery views
+        description: {type: String, trim: true, default: ""},
 
         // FIX: these were required:true but your upload UI treats them as optional.
         // Uploading without album/genre was throwing a validation error before this change.

@@ -89,6 +89,9 @@ function TrackCard({
 
       <p className="text-sm font-medium truncate">{track.title || "—"}</p>
       <p className="text-xs text-muted truncate">{track.artist || "—"}</p>
+      {track.description && (
+        <p className="mt-1 text-xs text-muted line-clamp-2">{track.description}</p>
+      )}
 
       <div className="flex items-center justify-between mt-2 gap-1">
         <button
